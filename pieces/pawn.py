@@ -16,15 +16,15 @@ class Pawn(Piece):
         moves = []
         pieceMoved = board[rowI][colI]
         # if rowI == self.initialPosition[0] and board[rowI+direction][colI] == 0:
-        if board[rowI+direction][colI] == 0:
+        if 0 <= rowI + direction <=7 and board[rowI+direction][colI] == 0:
             # move 1 square
             moves.append(Move((rowI, colI), (rowI+direction, colI), pieceMoved, 0))
-            if board[rowI+2*direction][colI] == 0:
+            if 0 <= rowI + 2* direction <=7 and board[rowI+2*direction][colI] == 0:
                 # move 2 squares
                 moves.append(Move((rowI, colI), (rowI+2*direction, colI), pieceMoved, 0))
         
         for i in [-1, 1]:
-            if (7>= colI + i >= 0) and board[rowI + direction][colI + i] != 0 and board[rowI + direction][colI + i].team != self.team:
+            if (7>= colI + i >= 0 and 7>= rowI + direction >= 0) and board[rowI + direction][colI + i] != 0 and board[rowI + direction][colI + i].team != self.team:
                 pieceCaptured = board[rowI + direction][colI + i]
                 moves.append(Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, pieceCaptured))
 

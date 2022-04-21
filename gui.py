@@ -77,15 +77,12 @@ def main():
                                 else:
                                     print("not valid move")
                             else:
+                                # stalemate ?
                                 stalemate = board.isStalemate(board.playerTurn, pins)
-                                i += 1
-                                if i == 9:
-                                    print("sal")
                                 if stalemate:
                                     print("STALEMATE")
                                 if pieceMoved not in pins:
                                     board.move(move)
-                                    # stalemate ?
                                     # Am I in check after move
                                     validMoves, check, pins = board.isCheck(not board.playerTurn)
                                     if check:

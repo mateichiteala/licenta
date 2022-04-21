@@ -97,6 +97,14 @@ class Board:
             i += 1
         print(boardToPrint)
     
+    def checkPromotion(self, piece, pointA, pointB):
+        if pointB[0] in [0, 7]:
+            imgName = "wQ" if self.playerTurn == True else "bQ"
+            piece = 0
+            piece = Queen(self.playerTurn, 'Q', self.IMAGES[imgName], pointB[0], pointB[1], False)
+            self.board[pointA[0]][pointA[1]] = piece
+        return piece
+            
     def move(self, move:Move):
         pointA = move.getInitialPos()
         pointB = move.getFinalPos()
@@ -106,6 +114,10 @@ class Board:
         # check if pointB in listMoves
 
         if move in listMoves:
+            if type(piece) == Pawn:
+                piece = self.checkPromotion(piece, pointA, pointB)
+                print("YOOOo")
+                self.printBoard()
             self.logMoves.append(Move(move.getInitialPos(), move.getFinalPos(), move.getPieceMoved(), move.getPieceCaptured()))
             piece.setPosition(pointB[0], pointB[1])
             self.board[pointB[0]][pointB[1]] = piece
