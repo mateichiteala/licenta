@@ -137,13 +137,26 @@ class Board:
     def getBoard(self):
         return self.board
 
-    def checkStalemate(self, playerTurn):
+    def isStalemate(self, playerTurn, pins):
         pieces = self.getPiecesByColor(playerTurn)
         piece: Piece
         for piece in pieces:
-            if len(piece.getMoves()) > 0:
-                pass
-            
+            moves = piece.getMoves(self.board) 
+            if len(moves) > 0:
+                for move in moves:
+                    self.move(move)
+                    # Am I in check after move
+                    validMoves, check, pins = self.isCheck(playerTurn)
+                    if check:
+                        self.undoMove()
+                    else:
+                        self.undoMove()
+                        return False
+        
+        return True
+                        
+                    
+
     def checksAndPins(self, kingPosition, playerTurn):
         directions = [(1, 0),(1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1)]
         pins = []
@@ -162,8 +175,8 @@ class Board:
                         if piece.team != playerTurn:
                             # enemy piece
                             # can that piece attack the king ?
-                            if  (((piece.type == 'p' and (direction in [(1, 1), (-1, -1), (-1, 1), (1, -1)]) and i==1) and
-                                ((playerTurn and direction[0] < 0) or (playerTurn == False and direction[0] > 0))) or \
+                            if  (((piece.type == 'p' and i==1 and (direction in [(1, 1), (-1, -1), (-1, 1), (1, -1)])) and
+                                ((playerTurn and direction[0] > 0) or (playerTurn == False and direction[0] < 0))) or \
                                 (piece.type == 'R' and (direction in [(0, 1), (0, -1), (-1, 0), (1, 0)])) or \
                                 (piece.type == 'B' and (direction in [(1, 1), (-1, -1), (-1, 1), (1, -1)])) or \
                                 (piece.type == 'Q') or \
@@ -203,11 +216,12 @@ class Board:
 
     def getPiecesByColor(self, playerTurn):
         pieces = []
-        for i in range(1, 8):
-            for j in range(1, 8):
+        for i in range(8):
+            for j in range(8):
                 piece: Piece = self.board[i][j]
                 if piece != 0 and piece.team == playerTurn:
                     pieces.append(piece)
+        print(pieces, playerTurn, len(pieces))
         return pieces
 
 
