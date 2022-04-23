@@ -1,5 +1,6 @@
 import pygame
 from board import Board
+from pieces.pawn import Pawn
 from pieces.piece import Piece
 from pieces.move import Move
 
@@ -38,26 +39,28 @@ def main():
     clock = pygame.time.Clock()
     screen.fill(pygame.Color("white"))
     board = Board()
+    
     running = True
     square_selected = ()
     player_move = []
-    i = 1
+
     while running:
         for e in pygame.event.get():
+            # Am I in check? Pins ? Valid moves ?
+            validMoves, check, pins = board.isCheck(board.playerTurn)
+            if check and len(validMoves) == 0:
+                print("CHECKMATE")
+                running = False
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.MOUSEBUTTONDOWN:
-
-                # Am I in check? Pins ? Valid moves ?
-                validMoves, check, pins = board.isCheck(board.playerTurn)
-                if check and len(validMoves) == 0:
-                    print("CHECKMATE")
                 # get position of mouse
                 location = pygame.mouse.get_pos()
                 col = location[0] // SQUARE_SIZE
                 row = location[1] // SQUARE_SIZE
                 if len(player_move) == 0 and board.board[row][col] == 0:
                     continue
+                # check if it is the same position
                 if square_selected == (row, col):
                     square_selected = ()
                     player_move.clear()
@@ -65,34 +68,12 @@ def main():
                     square_selected = (row, col)
                     player_move.append(square_selected)
                     if len(player_move) == 2:
-                        pieceMoved: Piece = board.board[player_move[0][0]][player_move[0][1]]
-                        pieceCaptured = board.board[player_move[1][0]][player_move[1][1]]
-                        move = Move(player_move[0], player_move[1], pieceMoved, pieceCaptured)
-                        if pieceMoved.team == board.playerTurn:
-                            if check:
-                                print("check")
-                                if move in validMoves:
-                                    print(move.get())
-                                    board.move(move)
-                                else:
-                                    print("not valid move")
-                            else:
-                                # stalemate ?
-                                stalemate = board.isStalemate(board.playerTurn, pins)
-                                if stalemate:
-                                    print("STALEMATE")
-                                if pieceMoved not in pins:
-                                    board.move(move)
-                                    # Am I in check after move
-                                    validMoves, check, pins = board.isCheck(not board.playerTurn)
-                                    if check:
-                                        print("not a valid move")
-                                        board.undoMove()
-                        else:
-                            print("Not your turn!")
+                        board.guiToBoard(player_move[0], player_move[1], check, pins, validMoves)
+                        
                         square_selected = ()
                         board.printBoard()
                         player_move.clear()
+                        
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_z:
                     board.undoMove()

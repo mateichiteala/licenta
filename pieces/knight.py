@@ -7,7 +7,8 @@ class Knight(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
         value = 3
         super().__init__(team, type, image, value, row, col, killable)
-    def getMoves(self, board):
+    def getMoves(self, _board):
+        board = _board.board
         directions = [(1, -2), (1, 2), (-1, -2), (-1, 2), (2, -1), (2, 1), (-2, -1), (-2, 1)]
         moves = []
         rowI, colI = self.getPosition()

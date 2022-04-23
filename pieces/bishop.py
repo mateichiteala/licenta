@@ -6,7 +6,8 @@ class Bishop(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
         value = 3
         super().__init__(team, type, image, value, row, col, killable)
-    def getMoves(self, board):
+    def getMoves(self, _board):
+        board = _board.board
         directions = [(1, 1), (-1, -1), (-1, 1), (1, -1)] # top-right, down-left. top-left, down-right
         moves = []
         rowI, colI = self.getPosition()

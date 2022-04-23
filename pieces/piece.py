@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import copy
+
 
 class Piece(ABC):
     def __init__(self, team, type, image, value, row, col, killable=False):
@@ -9,17 +9,23 @@ class Piece(ABC):
         self.value = value  # p-1, N-3, B-3, R-5, Q-9, K-INF
         self.row = row
         self.col = col
-    
+
     def getPosition(self):
         return self.row, self.col
-    
+
     def setPosition(self, row, col):
         self.row = row
         self.col = col
-    
+
     def getImage(self):
         return self.image
-    
+
     @abstractmethod
-    def getMoves(self, board):
+    def getMoves(self, _board):
         pass
+
+    def __eq__(self, obj) -> bool:
+        if type(obj) == type(self) and self.getPosition() == obj.getPosition():
+            return True
+        else:
+            return False

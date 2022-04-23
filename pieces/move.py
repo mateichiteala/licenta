@@ -1,5 +1,3 @@
-
-
 class Move():
     def __init__(self, initialPos, finalPos, pieceMoved=0, pieceCaputured=0):
         self.rowI = initialPos[0]
@@ -9,6 +7,9 @@ class Move():
 
         self.pieceMoved = pieceMoved
         self.pieceCaptured = pieceCaputured
+
+        self.enPassantPiece = 0
+        self.enPassantActive = 0
 
     def get(self):
         return (self.rowI, self.colI), (self.rowF, self.colF)
@@ -30,3 +31,4 @@ class Move():
             return True
         else:
             return False
+    

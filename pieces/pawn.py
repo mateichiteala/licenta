@@ -8,7 +8,8 @@ class Pawn(Piece):
         self.initialPosition = [row, col]
         super().__init__(team, type, image, value, row, col, killable)
     
-    def getMoves(self, board):
+    def getMoves(self, _board):
+        board = _board.board
         rowI, colI = self.getPosition()
         direction = 1
         if self.team == False:
@@ -27,6 +28,13 @@ class Pawn(Piece):
             if (7>= colI + i >= 0 and 7>= rowI + direction >= 0) and board[rowI + direction][colI + i] != 0 and board[rowI + direction][colI + i].team != self.team:
                 pieceCaptured = board[rowI + direction][colI + i]
                 moves.append(Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, pieceCaptured))
+            # enPassant
+            if (7>= colI + i >= 0 and 7>= rowI >= 0) and type(board[rowI][colI + i]) == Pawn and board[rowI][colI + i] == _board.enPassantPiece:
+                move = Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, 0)
+                move.enPassantActive = pieceMoved
+                moves.append(move)
+
+
 
         return moves
 

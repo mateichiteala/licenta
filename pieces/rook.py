@@ -6,7 +6,8 @@ class Rook(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
         value = 5
         super().__init__(team, type, image, value, row, col, killable)
-    def getMoves(self, board):
+    def getMoves(self, _board):
+        board = _board.board
         moves = []
         directions = [(-1, 0), (1, 0), (0, 1), (0, -1)] #  up, down, left, right
         rowI, colI = self.getPosition()

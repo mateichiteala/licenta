@@ -5,7 +5,8 @@ class King(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
         value = -1
         super().__init__(team, type, image, value, row, col, killable)
-    def getMoves(self, board):
+    def getMoves(self, _board):
+        board = _board.board
         directions = [(1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1)]
         moves = []
         rowI, colI = self.getPosition()
