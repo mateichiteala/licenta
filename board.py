@@ -24,7 +24,7 @@ class Board:
         self.blackKing = 0
 
         self.enPassantPiece = 0
-        self.preveiousenPassantPiece = 0
+        self.enPassantlist = list()
 
 
         self.newBoard()
@@ -108,15 +108,6 @@ class Board:
             self.board[pointA[0]][pointA[1]] = piece
         return piece
 
-    def checkEnpassant(self, pawn: Pawn, pointA, pointB):
-        if abs(pointB[0] - pointA[0]) == 2:
-            pawn.enPassant = True
-            if pawn.team:
-                self.enPassantWhite = pawn
-            else:
-                self.enPassantBlack = pawn
-
-        return pawn
 
     def enPassantMade(self, move: Move):
         # en passant was made
@@ -126,13 +117,19 @@ class Board:
                 move.pieceCaptured =  self.board[move.rowF - direction][move.colF]
                 move.enPassantPiece = self.board[move.rowF - direction][move.colF] 
                 self.board[move.rowF - direction][move.colF] = 0
+                print("YPPP")
         return move
             
     def setEnPessant(self, piece: Piece, pointA, pointB):
         if abs(pointB[0] - pointA[0]) == 2:
             self.enPassantPiece = piece
+            self.enPassantlist.append(True)
+            print("yo1")
         else:
             self.enPassantPiece = 0
+            self.enPassantlist.append(False)
+            print("yo2")
+
 
     def move(self, move: Move):
         pointA = move.getInitialPos()
@@ -152,13 +149,16 @@ class Board:
             #     if self.enPassantBlack != 0:
             #         self.enPassantBlack.enPassant = False
             #     self.enPassantBlack = 0
-
+            nr_enPassants = len(self.enPassantlist)
             if type(pieceMoved) == Pawn:
                 pieceMoved = self.promotionForPawn(pieceMoved, pointA, pointB)
                 move = self.enPassantMade(move)
                 self.setEnPessant(pieceMoved, pointA, pointB)
+            
 
-                    
+            if nr_enPassants == len(self.enPassantlist):
+                self.enPassantlist.append(False)
+                print("aici")
 
             # update log
             self.logMoves.append(move)
@@ -175,11 +175,12 @@ class Board:
 
             # change turn
             self.playerTurn = not self.playerTurn
+            print(self.enPassantlist)
+            print("final")
 
     def undoMove(self):
         if len(self.logMoves) != 0:
             move: Move = self.logMoves.pop()
-
             pieceMoved: Piece = move.getPieceMoved()
             pieceCaptured: Piece = move.getPieceCaptured()
             # if type(pieceCaptured) == Pawn and type(pieceMoved) == Pawn:
@@ -189,16 +190,33 @@ class Board:
 
             self.board[move.rowI][move.colI] = pieceMoved
             self.board[move.rowI][move.colI].setPosition(move.rowI, move.colI)
+            
 
-            if move.enPassantPiece != 0:
+            enPassant = self.enPassantlist.pop()
+            # print("undo")
+            # print(len(self.enPassantlist))
+            # # piece is active for en passant
+            # if type(pieceMoved) == Pawn and enPassant == True:
+            #     self.enPassantPiece = pieceMoved
+            #     print("unod2")
+            # else:
+            #     self.enPassantPiece = 0
+                    
+            # piece made en passant
+            if move.enPassantPiece != 0: 
                 self.board[move.rowF][move.colF] = 0
                 self.board[pieceCaptured.row][pieceCaptured.col] = pieceCaptured
                 self.enPassantPiece = pieceCaptured
             else:
+                if len(self.enPassantlist) > 0:
+                    enPassant = self.enPassantlist[len(self.enPassantlist) - 1]
+                    if enPassant == True:
+                        presentMove: Move = self.logMoves[len(self.logMoves) - 1]
+                        pieceMoved: Piece = presentMove.getPieceMoved()
+                        self.enPassantPiece = pieceMoved
+                    else:
+                        self.enPassantPiece == 0
                 self.board[move.rowF][move.colF] = pieceCaptured
-                if move.enPassantActive != 0:
-                    self.enPassantPiece = pieceCaptured
-                    
                 if self.board[move.rowF][move.colF] != 0:
                     self.board[move.rowF][move.colF].setPosition(
                         move.rowF, move.colF)

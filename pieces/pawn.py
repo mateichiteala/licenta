@@ -31,7 +31,6 @@ class Pawn(Piece):
             # enPassant
             if (7>= colI + i >= 0 and 7>= rowI >= 0) and type(board[rowI][colI + i]) == Pawn and board[rowI][colI + i] == _board.enPassantPiece:
                 move = Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, 0)
-                move.enPassantActive = pieceMoved
                 moves.append(move)
 
 
