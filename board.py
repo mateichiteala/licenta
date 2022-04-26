@@ -27,6 +27,7 @@ class Board:
         self.enPassantlist = list()
 
 
+
         self.newBoard()
 
     def loadImages(self):
@@ -124,17 +125,16 @@ class Board:
         if abs(pointB[0] - pointA[0]) == 2:
             self.enPassantPiece = piece
             self.enPassantlist.append(True)
-            print("yo1")
         else:
             self.enPassantPiece = 0
             self.enPassantlist.append(False)
-            print("yo2")
 
 
     def move(self, move: Move):
         pointA = move.getInitialPos()
         pointB = move.getFinalPos()
         pieceMoved: Piece = move.getPieceMoved()
+        pieceCaptured: Piece = move.getPieceCaptured()
 
         # moves for the pieceMoved
         listMoves = pieceMoved.getMoves(self)
@@ -155,34 +155,58 @@ class Board:
                 move = self.enPassantMade(move)
                 self.setEnPessant(pieceMoved, pointA, pointB)
             
-
             if nr_enPassants == len(self.enPassantlist):
                 self.enPassantlist.append(False)
-                print("aici")
+
+            # if type(pieceMoved) == King:
+            #     if pieceMoved.team:
+            #         self.whiteKing = pieceMoved
+            #     else:
+            #         self.blackKing = pieceMoved
+            if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
+                direction = 1 if pieceCaptured.col > pieceMoved.col else -1
+                self.board[pointB[0]][pointB[1]] = 0
+                self.board[pointA[0]][pointA[1]] = 0
+                
+                pieceMoved.setPosition(pointB[0], pointA[1] + (direction)*2)
+                # if pieceMoved.team:
+                #     self.whiteKing = pieceMoved
+                # else:
+                #     self.blackKing = pieceMoved
+                pieceCaptured.setPosition(pointB[0], pointA[1] + (direction)*2 - direction)
+
+                move.setPieceCaptured = pieceCaptured
+                move.setPieceMoved = pieceMoved
+                
+                pieceMoved.castle = False
+                pieceCaptured.castle = False
+                
+                self.board[pointB[0]][pointA[1] + (direction)*2] = pieceMoved
+                self.board[pointB[0]][pointA[1] + (direction)*2 - direction] = pieceCaptured
+            else:               
+                # new position for the piece
+                pieceMoved.setPosition(pointB[0], pointB[1])
+                self.board[pointB[0]][pointB[1]] = pieceMoved
+                self.board[pointA[0]][pointA[1]] = 0
+
+                # if move.pieceMoved.type == True and move.pieceMoved.team == "K":
+                #     self.whiteKing = (move.rowF, move.colF)
+                # if move.pieceMoved.type == False and move.pieceMoved.team == "K":
+                #     self.blackKing = (move.rowF, move.colF)
 
             # update log
             self.logMoves.append(move)
-
-            # new position for the piece
-            pieceMoved.setPosition(pointB[0], pointB[1])
-            self.board[pointB[0]][pointB[1]] = pieceMoved
-            self.board[pointA[0]][pointA[1]] = 0
-
-            # if move.pieceMoved.type == True and move.pieceMoved.team == "K":
-            #     self.whiteKing = (move.rowF, move.colF)
-            # if move.pieceMoved.type == False and move.pieceMoved.team == "K":
-            #     self.blackKing = (move.rowF, move.colF)
-
             # change turn
             self.playerTurn = not self.playerTurn
-            print(self.enPassantlist)
-            print("final")
 
     def undoMove(self):
         if len(self.logMoves) != 0:
             move: Move = self.logMoves.pop()
             pieceMoved: Piece = move.getPieceMoved()
+            pieceMovedPosition = pieceMoved.getPosition()
             pieceCaptured: Piece = move.getPieceCaptured()
+            if pieceCaptured != 0:
+                pieceCapturedPosition = pieceCaptured.getPosition()
             # if type(pieceCaptured) == Pawn and type(pieceMoved) == Pawn:
             #     direction = 1 if self.playerTurn else -1
             #     if move.rowF - direction == pieceCaptured.row:
@@ -216,10 +240,28 @@ class Board:
                         self.enPassantPiece = pieceMoved
                     else:
                         self.enPassantPiece == 0
+                
                 self.board[move.rowF][move.colF] = pieceCaptured
                 if self.board[move.rowF][move.colF] != 0:
                     self.board[move.rowF][move.colF].setPosition(
                         move.rowF, move.colF)
+                if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
+                    self.board[move.rowI][move.colI] = pieceMoved
+                    self.board[move.rowI][move.colI].castle = True
+
+                    self.board[move.rowF][move.colF] = pieceCaptured
+                    self.board[move.rowF][move.colF].castle = True
+
+                    self.board[pieceMovedPosition[0]][pieceMovedPosition[1]] = 0
+                    self.board[pieceCapturedPosition[0]][pieceCapturedPosition[1]] = 0
+
+                    self.board[move.rowI][move.colI].setPosition(move.rowI, move.colI)
+                    self.board[move.rowF][move.colF].setPosition(move.rowF, move.colF)
+                    # if pieceMoved.team:
+                    #     self.whiteKing = pieceMoved
+                    # else:
+                    #     self.blackKing = pieceMoved
+                    
 
             # if move.pieceMoved.team == True and move.pieceMoved.type == "K":
             #     self.whiteKing = (move.rowF, move.colF)

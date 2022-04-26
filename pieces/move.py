@@ -26,6 +26,13 @@ class Move():
     def getPieceCaptured(self):
         return self.pieceCaptured
     
+    def setPieceMoved(self, pieceMoved):
+        self.pieceMoved = pieceMoved
+    
+    def setPieceCaptured(self, pieceCaptured):
+        self.pieceCaptured = pieceCaptured
+
+    
     def __eq__(self, obj) -> bool:
         if self.getInitialPos() == obj.getInitialPos() and self.getFinalPos() == obj.getFinalPos():
             return True
