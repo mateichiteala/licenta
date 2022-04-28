@@ -67,6 +67,7 @@ def main():
                 else:
                     square_selected = (row, col)
                     player_move.append(square_selected)
+                    print(player_move)
                     if len(player_move) == 2:
                         board.guiToBoard(player_move[0], player_move[1], check, pins, validMoves)
                         

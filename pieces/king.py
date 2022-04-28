@@ -22,6 +22,7 @@ class King(Piece):
                 moves.append(Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
         
         # check castle
+        print(self.castle)
         if self.castle:
             for i in [-4, 3]:
                 rook: Rook = board[rowI][colI + i] 
@@ -30,23 +31,30 @@ class King(Piece):
                     empty = True
                     inc = 1 if i==3 else -1
                     moves_castle = []
+                    
                     for j in range(inc, i, inc):
                         if board[rowI][colI+j] != 0:
                             empty = False
                             break
-                        moves_castle.append(Move((rowI, colI + j - 1), (rowI, colI + j), pieceMoved, 0))
-
+                        if i == -4:
+                            moves_castle.append(Move((rowI, colI + j + 1), (rowI, colI + j), pieceMoved, 0))
+                        else:
+                            moves_castle.append(Move((rowI, colI + j - 1), (rowI, colI + j), pieceMoved, 0))
+                            
                     # check if the empty squares are attacked
                     if empty:
                         self.castle = False
                         move: Move
-                        for move in moves_castle:
+                        for index, move in enumerate(moves_castle):
                             _board.move(move)
                             _board.printBoard()
                             _, check, _= _board.isCheck(self.team)
                             if check:
+                                _index = index
+                                while _index >= 0:
+                                    _board.undoMove()
+                                    _index -= 1
                                 self.castle = True
-                                _board.undoMove()
                                 break
                         # the empty squares are not attacked
                         # undo moves
@@ -55,6 +63,7 @@ class King(Piece):
                                 print("1")
                                 _board.undoMove()
                             moves.append(Move((rowI, colI), (rowI, colI + i), pieceMoved, rook))
+                            self.castle = True
 
                             
         return moves

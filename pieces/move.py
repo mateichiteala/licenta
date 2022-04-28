@@ -11,6 +11,8 @@ class Move():
         self.enPassantPiece = 0
         self.enPassantActive = 0
 
+        self.castle = False
+
     def get(self):
         return (self.rowI, self.colI), (self.rowF, self.colF)
 

@@ -26,6 +26,7 @@ class Board:
         self.enPassantPiece = 0
         self.enPassantlist = list()
 
+        self.indexFirstMoveKingAndRook = []
 
 
         self.newBoard()
@@ -183,11 +184,18 @@ class Board:
                 
                 self.board[pointB[0]][pointA[1] + (direction)*2] = pieceMoved
                 self.board[pointB[0]][pointA[1] + (direction)*2 - direction] = pieceCaptured
-            else:               
+
+            else:          
+                if type(pieceMoved) in [Rook, King] and pieceMoved.castle == True:
+                    pieceMoved.castle = False
+                    self.indexFirstMoveKingAndRook.append(len(self.logMoves))
+
                 # new position for the piece
                 pieceMoved.setPosition(pointB[0], pointB[1])
                 self.board[pointB[0]][pointB[1]] = pieceMoved
                 self.board[pointA[0]][pointA[1]] = 0
+
+                     
 
                 # if move.pieceMoved.type == True and move.pieceMoved.team == "K":
                 #     self.whiteKing = (move.rowF, move.colF)
@@ -245,6 +253,16 @@ class Board:
                 if self.board[move.rowF][move.colF] != 0:
                     self.board[move.rowF][move.colF].setPosition(
                         move.rowF, move.colF)
+                
+                # if move.castle:
+                #     pieceMoved.castle = True
+                print(self.indexFirstMoveKingAndRook)
+                print(len(self.logMoves))
+                if len(self.indexFirstMoveKingAndRook) > 0 and len(self.logMoves) == self.indexFirstMoveKingAndRook[len(self.indexFirstMoveKingAndRook)-1]:
+                    pieceMoved.castle = True
+                    print("aiciz")
+                    self.indexFirstMoveKingAndRook.pop()
+
                 if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
                     self.board[move.rowI][move.colI] = pieceMoved
                     self.board[move.rowI][move.colI].castle = True
@@ -436,7 +454,9 @@ class Board:
         #     if 0<= player_move[1][0] - direction <= 7 and type(board.board[player_move[1][0] - direction][player_move[1][1]]) == Pawn:
         #         pieceCaptured = board.board[player_move[1][0] - direction][player_move[1][1]]
         #         move = Move(player_move[0], player_move[1], pieceMoved, pieceCaptured)
-
+        if pieceMoved == 0 :
+            print("not a valid move!")
+            return
         if pieceMoved.team == self.playerTurn:
             if check:
                 print("CHECK!")
