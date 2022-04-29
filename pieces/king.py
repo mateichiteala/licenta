@@ -22,7 +22,6 @@ class King(Piece):
                 moves.append(Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
         
         # check castle
-        print(self.castle)
         if self.castle:
             for i in [-4, 3]:
                 rook: Rook = board[rowI][colI + i] 

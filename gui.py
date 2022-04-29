@@ -1,3 +1,4 @@
+from re import S
 import pygame
 from board import Board
 from pieces.pawn import Pawn
@@ -30,7 +31,23 @@ def drawPieces(screen, board):
 
 def drawGameState(screen, board):
     drawBoard(screen)
-    drawPieces(screen, board)
+    drawPieces(screen, board.getBoard())
+    # highlightSquares(screen, board, validMoves, square_selected)
+
+
+
+def highlightSquares(screen, board, validMoves, square_selected):
+    if square_selected != ():
+        row, col = square_selected
+        if board.board[row][col] != 0 and board.board[row][col].team == ("w" if board.playerTurn else "b"):
+            s = pygame.Surface((SQUARE_SIZE, SQUARE_SIZE))
+            s.set_alpha(100)
+            s.fill(pygame.color("blue"))
+            screen.blit(s, (col*SQUARE_SIZE, row* SQUARE_SIZE))
+            s.fill(pygame.Color("yellow"))
+            for move in validMoves:
+                if move.rowI == row and move.colI == col:
+                    screen.blit(s, (SQUARE_SIZE*move.colF, SQUARE_SIZE*move.rowF))
 
 
 def main():
@@ -46,43 +63,49 @@ def main():
 
     while running:
         for e in pygame.event.get():
-            # Am I in check? Pins ? Valid moves ?
-            validMoves, check, pins = board.isCheck(board.playerTurn)
-            if check and len(validMoves) == 0:
-                print("CHECKMATE")
-                running = False
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.MOUSEBUTTONDOWN:
-                # get position of mouse
+                # Is the player in check? Pins ? Valid moves ?
+                print("SALLLL")
+                validMoves, check, pins = board.isCheck(board.playerTurn)
+
+                # If player in check and the player has no valid move to make -> checkmate
+                if check and len(validMoves) == 0:
+                    print("CHECKMATE")
+                    running = False
+                    
+                # get position of the mouse
                 location = pygame.mouse.get_pos()
                 col = location[0] // SQUARE_SIZE
                 row = location[1] // SQUARE_SIZE
-                if len(player_move) == 0 and board.board[row][col] == 0:
-                    continue
-                # check if it is the same position
-                if square_selected == (row, col):
+
+                # clicked on an empty square(first) -> reset
+                # clicked on the same squeare -> reset
+                if (len(player_move) == 0 and board.board[row][col] == 0) or square_selected == (row, col):
                     square_selected = ()
                     player_move.clear()
+                    continue
                 else:
                     square_selected = (row, col)
                     player_move.append(square_selected)
-                    print(player_move)
+
+                    # the player does a move
                     if len(player_move) == 2:
                         board.guiToBoard(player_move[0], player_move[1], check, pins, validMoves)
-                        
-                        square_selected = ()
                         board.printBoard()
+
+                        square_selected = ()
                         player_move.clear()
-                        
+
+          
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_z:
                     board.undoMove()
-                    square_selected = ()
                     board.printBoard()
-
-                        
-        drawGameState(screen, board.getBoard())
+                    square_selected = ()
+          
+        drawGameState(screen, board)  
         clock.tick(MAX_FPS)
         pygame.display.flip()
 

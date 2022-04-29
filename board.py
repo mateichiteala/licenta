@@ -1,3 +1,4 @@
+from typing import List
 from xmlrpc.client import Boolean
 from pieces.bishop import Bishop
 from pieces.king import King
@@ -19,9 +20,9 @@ class Board:
         self.IMAGES = {}
         self.playerTurn = True
 
-        self.check = False
-        self.whiteKing = 0
-        self.blackKing = 0
+        self.check: Boolean = False
+        self.whiteKing: King = 0
+        self.blackKing: King = 0
 
         self.enPassantPiece = 0
         self.enPassantlist = list()
@@ -101,13 +102,14 @@ class Board:
             i += 1
         print(boardToPrint)
 
-    def promotionForPawn(self, piece: Pawn, pointA, pointB):
+    def promotionForPawn(self, piece: Pawn, pointA: tuple, pointB: tuple):
+        # if final row position is 0, 7 than -> promotion
         if pointB[0] in [0, 7]:
             imgName = "wQ" if self.playerTurn == True else "bQ"
-            piece = 0
             piece = Queen(self.playerTurn, 'Q',
                           self.IMAGES[imgName], pointB[0], pointB[1], False)
             self.board[pointA[0]][pointA[1]] = piece
+
         return piece
 
 
@@ -115,21 +117,24 @@ class Board:
         # en passant was made
         direction = 1 if self.playerTurn else -1
         if 0 <= move.rowF - direction <= 7:
+            # check if pieceCaptured == 0 + check the piece behind the pieceCaptured is a pawn + the piece has enPassnt activated
             if move.getPieceCaptured() == 0 and type(self.board[move.rowF - direction][move.colF]) == Pawn and self.board[move.rowF - direction][move.colF] == self.enPassantPiece:
+                # set the new piece captured + set that move was en passant
                 move.pieceCaptured =  self.board[move.rowF - direction][move.colF]
                 move.enPassantPiece = self.board[move.rowF - direction][move.colF] 
                 self.board[move.rowF - direction][move.colF] = 0
-                print("YPPP")
+
         return move
             
-    def setEnPessant(self, piece: Piece, pointA, pointB):
+    def setEnPessant(self, piece: Piece, pointA: tuple, pointB: tuple):
+        # if the distance == 2 -> the piece is set to en passant
+        # append in list in order to know when a piece is set to en passant(for undo move)
         if abs(pointB[0] - pointA[0]) == 2:
             self.enPassantPiece = piece
             self.enPassantlist.append(True)
         else:
             self.enPassantPiece = 0
             self.enPassantlist.append(False)
-
 
     def move(self, move: Move):
         pointA = move.getInitialPos()
@@ -140,52 +145,38 @@ class Board:
         # moves for the pieceMoved
         listMoves = pieceMoved.getMoves(self)
 
-        # check if move in listMoves
+        # Check if move in listMoves
         if move in listMoves:
-            # if self.playerTurn:
-            #     if self.enPassantWhite != 0:
-            #         self.enPassantWhite.enPassant = False
-            #     self.enPassantWhite = 0
-            # else:
-            #     if self.enPassantBlack != 0:
-            #         self.enPassantBlack.enPassant = False
-            #     self.enPassantBlack = 0
-            nr_enPassants = len(self.enPassantlist)
+            # Check pawn promotion, enpassant made and if the pawn is set to enpassant
             if type(pieceMoved) == Pawn:
                 pieceMoved = self.promotionForPawn(pieceMoved, pointA, pointB)
                 move = self.enPassantMade(move)
                 self.setEnPessant(pieceMoved, pointA, pointB)
-            
-            if nr_enPassants == len(self.enPassantlist):
+            else:
                 self.enPassantlist.append(False)
 
-            # if type(pieceMoved) == King:
-            #     if pieceMoved.team:
-            #         self.whiteKing = pieceMoved
-            #     else:
-            #         self.blackKing = pieceMoved
+            # check for castling
             if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
                 direction = 1 if pieceCaptured.col > pieceMoved.col else -1
-                self.board[pointB[0]][pointB[1]] = 0
-                self.board[pointA[0]][pointA[1]] = 0
                 
+                # update the final position of the king and rook
                 pieceMoved.setPosition(pointB[0], pointA[1] + (direction)*2)
-                # if pieceMoved.team:
-                #     self.whiteKing = pieceMoved
-                # else:
-                #     self.blackKing = pieceMoved
-                pieceCaptured.setPosition(pointB[0], pointA[1] + (direction)*2 - direction)
-
-                move.setPieceCaptured = pieceCaptured
                 move.setPieceMoved = pieceMoved
-                
                 pieceMoved.castle = False
-                pieceCaptured.castle = False
-                
+
+                pieceCaptured.setPosition(pointB[0], pointA[1] + (direction)*2 - direction)
+                move.setPieceCaptured = pieceCaptured
+                pieceCaptured.castle = False  
+
                 self.board[pointB[0]][pointA[1] + (direction)*2] = pieceMoved
                 self.board[pointB[0]][pointA[1] + (direction)*2 - direction] = pieceCaptured
 
-            else:          
+                # update the initial position of the king and rook to zero
+                self.board[pointB[0]][pointB[1]] = 0
+                self.board[pointA[0]][pointA[1]] = 0
+            else:
+                # If the rook was moved and has castle=True -> can not castle no more
+                # store the index of the move(for undo)          
                 if type(pieceMoved) in [Rook, King] and pieceMoved.castle == True:
                     pieceMoved.castle = False
                     self.indexFirstMoveKingAndRook.append(len(self.logMoves))
@@ -195,53 +186,41 @@ class Board:
                 self.board[pointB[0]][pointB[1]] = pieceMoved
                 self.board[pointA[0]][pointA[1]] = 0
 
-                     
-
-                # if move.pieceMoved.type == True and move.pieceMoved.team == "K":
-                #     self.whiteKing = (move.rowF, move.colF)
-                # if move.pieceMoved.type == False and move.pieceMoved.team == "K":
-                #     self.blackKing = (move.rowF, move.colF)
-
             # update log
             self.logMoves.append(move)
             # change turn
             self.playerTurn = not self.playerTurn
 
     def undoMove(self):
+        # There are moves to undo
         if len(self.logMoves) != 0:
             move: Move = self.logMoves.pop()
             pieceMoved: Piece = move.getPieceMoved()
-            pieceMovedPosition = pieceMoved.getPosition()
             pieceCaptured: Piece = move.getPieceCaptured()
+            
+            # store the position of moved piece/captured piece
+            pieceMovedPosition = pieceMoved.getPosition()
             if pieceCaptured != 0:
                 pieceCapturedPosition = pieceCaptured.getPosition()
-            # if type(pieceCaptured) == Pawn and type(pieceMoved) == Pawn:
-            #     direction = 1 if self.playerTurn else -1
-            #     if move.rowF - direction == pieceCaptured.row:
-            #         pieceCaptured.enPassant = True
 
+            # update the position of the moved piece
             self.board[move.rowI][move.colI] = pieceMoved
             self.board[move.rowI][move.colI].setPosition(move.rowI, move.colI)
             
 
-            enPassant = self.enPassantlist.pop()
-            # print("undo")
-            # print(len(self.enPassantlist))
-            # # piece is active for en passant
-            # if type(pieceMoved) == Pawn and enPassant == True:
-            #     self.enPassantPiece = pieceMoved
-            #     print("unod2")
-            # else:
-            #     self.enPassantPiece = 0
-                    
-            # piece made en passant
+            self.enPassantlist.pop()        
+            # Piece made en passant
             if move.enPassantPiece != 0: 
                 self.board[move.rowF][move.colF] = 0
                 self.board[pieceCaptured.row][pieceCaptured.col] = pieceCaptured
+                # update the new enPassant piece
                 self.enPassantPiece = pieceCaptured
             else:
+                # check if there is a new en passant piece
                 if len(self.enPassantlist) > 0:
+                    # get the current state of the board
                     enPassant = self.enPassantlist[len(self.enPassantlist) - 1]
+                    # set the new en passant
                     if enPassant == True:
                         presentMove: Move = self.logMoves[len(self.logMoves) - 1]
                         pieceMoved: Piece = presentMove.getPieceMoved()
@@ -249,122 +228,128 @@ class Board:
                     else:
                         self.enPassantPiece == 0
                 
+                # set the pieceCaptured on the board and position(if != 0)
                 self.board[move.rowF][move.colF] = pieceCaptured
                 if self.board[move.rowF][move.colF] != 0:
                     self.board[move.rowF][move.colF].setPosition(
                         move.rowF, move.colF)
                 
-                # if move.castle:
-                #     pieceMoved.castle = True
-                print(self.indexFirstMoveKingAndRook)
-                print(len(self.logMoves))
+                # check if the undo move reset the castle status
                 if len(self.indexFirstMoveKingAndRook) > 0 and len(self.logMoves) == self.indexFirstMoveKingAndRook[len(self.indexFirstMoveKingAndRook)-1]:
                     pieceMoved.castle = True
-                    print("aiciz")
                     self.indexFirstMoveKingAndRook.pop()
 
+                # Castle was made
                 if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
-                    self.board[move.rowI][move.colI] = pieceMoved
+                    # set the king back
+                    # self.board[move.rowI][move.colI] = pieceMoved
                     self.board[move.rowI][move.colI].castle = True
+                    # self.board[move.rowI][move.colI].setPosition(move.rowI, move.colI)
 
+                    # set the rook back
                     self.board[move.rowF][move.colF] = pieceCaptured
                     self.board[move.rowF][move.colF].castle = True
+                    self.board[move.rowF][move.colF].setPosition(move.rowF, move.colF)
 
+                    # zero the position
                     self.board[pieceMovedPosition[0]][pieceMovedPosition[1]] = 0
                     self.board[pieceCapturedPosition[0]][pieceCapturedPosition[1]] = 0
-
-                    self.board[move.rowI][move.colI].setPosition(move.rowI, move.colI)
-                    self.board[move.rowF][move.colF].setPosition(move.rowF, move.colF)
-                    # if pieceMoved.team:
-                    #     self.whiteKing = pieceMoved
-                    # else:
-                    #     self.blackKing = pieceMoved
-                    
-
-            # if move.pieceMoved.team == True and move.pieceMoved.type == "K":
-            #     self.whiteKing = (move.rowF, move.colF)
-            # if move.pieceMoved.team == False and move.pieceMoved.type == "K":
-            #     self.blackKing = (move.rowF, move.colF)
 
             self.playerTurn = not self.playerTurn  # change turn
 
     def getBoard(self):
         return self.board
 
-    def isStalemate(self, playerTurn, pins):
+    def isStalemate(self, playerTurn: bool):
+        # Get all the pieces from that team
         pieces = self.getPiecesByColor(playerTurn)
+
         piece: Piece
         for piece in pieces:
+            # Get all moves
             moves = piece.getMoves(self)
             if len(moves) > 0:
                 move: Move
                 for move in moves:
-                    self.move(move)
                     # verify if check after move
+                    # If there are no checks -> no stalemate
+                    self.move(move)
                     _, check, _ = self.isCheck(playerTurn)
-                    if check:
-                        self.undoMove()
-                    else:
-                        self.undoMove()
+                    self.undoMove()
+
+                    if check == False:
                         return False
-        # the player has legal move to make
+
+        # the player has no legal move to make
         return True
 
-    def checksAndPins(self, kingPosition, playerTurn):
-        # every direction from where the king can be attacked(without knight)
+    def checksAndPins(self, kingPosition: tuple, playerTurn: Boolean):
+        # Every direction from where the king can be attacked(without the knight)
         directions = [(1, 0), (1, -1), (0, -1), (-1, -1),
                       (-1, 0), (-1, 1), (0, 1), (1, 1)]
-        # pieces that can not be moved because they will create a check
+
+        # Pieces that can not be moved because they will create a check
         pins = []
-        # pieces that check the king
+        
+        # Pieces that check the king
+        # checks contains the piece that attacks the king and clearSquaresDirections
         checks = []
+
         for direction in directions:
+            # Used to check if there is an allay piece between the king and the piece that attacks
             allayPiece = 0
-            # squares between king and the piece that checks the king
+            
+            # Squares between king and the piece that checks the king
             clearSquaresDirections = []
+            
             for i in range(1, 8):
                 rowF = kingPosition[0] + direction[0] * i
                 colF = kingPosition[1] + direction[1] * i
+
                 if 0 <= rowF < 8 and 0 <= colF < 8:
                     piece: Piece = self.board[rowF][colF]
-                    # check if is a piece
+                    
+                    # Check if it is a piece
                     if piece != 0:
-                        # check from what team is that piece
+                        # Check from what team is that piece
                         if piece.team != playerTurn:
-                            # enemy piece
-                            # can that piece attack the king ?
+                            # enemy piece, can that piece attack the king ?
                             if (((piece.type == 'p' and i == 1 and (direction in [(1, 1), (-1, -1), (-1, 1), (1, -1)])) and
                                  ((playerTurn and direction[0] > 0) or (playerTurn == False and direction[0] < 0))) or
                                 (piece.type == 'R' and (direction in [(0, 1), (0, -1), (-1, 0), (1, 0)])) or
                                 (piece.type == 'B' and (direction in [(1, 1), (-1, -1), (-1, 1), (1, -1)])) or
                                 (piece.type == 'Q') or
                                     (piece.type == 'K' and i == 1)):
-                                # if allayPiece = 0 -> the king is not protected from that direction
+                                # if allayPiece == 0 -> the king is not protected from that direction
                                 if allayPiece == 0:
                                     checks.append(
                                         (piece, clearSquaresDirections))
-                                # if allayPiece != 0 -> the king is not attacked but the piece that protects him is pined
+                                # if allayPiece != 0 -> the king is not attacked but the piece that protects is pined
                                 else:
                                     pins.append(allayPiece)
-                                break
-                            else:
-                                break
+                            # the iteration stops on that direction
+                            break
                         else:
                             # if allayPiece is already initialized with a piece -> the king is not attacked from that direction +
-                            # there are no pins
+                            # there are no pins(on that direction)
+                            # the iteration stops on that direction
                             if allayPiece != 0:
                                 break
+                            # possible a pin
                             allayPiece = piece
                     else:
+                        # add squares between king and the attack piece(if that exists)
                         clearSquaresDirections.append((rowF, colF))
 
         # for knight
-        # the knight must be captured
+        # the knight must be captured(can not be blocked)
         knightDirections = [(1, -2), (1, 2), (-1, -2),
                             (-1, 2), (2, -1), (2, 1), (-2, -1), (-2, 1)]
+
         for direction in knightDirections:
             rowF = kingPosition[0] + direction[0]
             colF = kingPosition[1] + direction[1]
+            
             if 0 <= rowF < 8 and 0 <= colF < 8:
                 piece: Piece = self.board[rowF][colF]
                 if piece != 0 and piece.type == 'N' and piece.team != playerTurn:
@@ -372,8 +357,8 @@ class Board:
 
         return checks, pins
 
-    def getPiecesByColor(self, playerTurn):
-        pieces = []
+    def getPiecesByColor(self, playerTurn: Boolean):
+        pieces = list()
         for i in range(8):
             for j in range(8):
                 piece: Piece = self.board[i][j]
@@ -383,25 +368,31 @@ class Board:
 
     def escapeCheck(self, king: King, checks: list, pins: list, playerTurn: Boolean):
         validMoves = list()
+        # If there is only one check -> capture, block or move king
         if len(checks) == 1:
-            # check if capture, block or move king
             # get all pieces from a team(white: True or black: False)
             pieces = self.getPiecesByColor(playerTurn)
+            
             piece: Piece
             for piece in pieces:
-                # can I move that piece(pin)
+                # can I move that piece(check if it is pin)
                 if piece not in pins and piece.type != "K":
-                    moves = piece.getMoves(self)
-                    move: Move
+                    # Get the clear squares in order to block the attack
                     clearSquares = checks[0][1]
+                    pieceThatChecks: Piece = checks[0][0]
+                    moves = piece.getMoves(self)
+                    
+                    move: Move
                     for move in moves:
                         # can my piece capture
-                        if checks[0] == move.getPieceCaptured():
+                        if pieceThatChecks == move.getPieceCaptured():
                             validMoves.append(move)
+                        
                         # can my piece block
                         if move.getFinalPos() in clearSquares:
                             validMoves.append(move)
-            # can my king move
+            
+            # Can the king move
             kingValidMoves = king.getMoves(self)
             for moveKing in kingValidMoves:
                 self.move(moveKing)
@@ -409,6 +400,7 @@ class Board:
                 checksFuture, _ = self.checksAndPins(
                     king.getPosition(), playerTurn)
                 if len(checksFuture) == 0:
+                    # that king has a valid move to make
                     validMoves.append(moveKing)
                 self.undoMove()
 
@@ -417,46 +409,43 @@ class Board:
             kingValidMoves = king.getMoves(self)
             for moveKing in kingValidMoves:
                 self.move(moveKing)
+                # check if king moves it will result in a check
                 checksFuture, _ = self.checksAndPins(
-                    king.getPosition(), not playerTurn)
+                    king.getPosition(), playerTurn)
                 if len(checksFuture) == 0:
+                    # that king has a valid move to make
                     validMoves.append(moveKing)
                 self.undoMove()
 
         return validMoves
 
-    def isCheck(self, playerTurn):
+    def isCheck(self, playerTurn: Boolean):
+        # ValidMoves to escape check
         validMoves = list()
-        # Get kingPosition
-        if playerTurn is False:
-            kingPosition = self.blackKing.getPosition()
-        else:
-            kingPosition = self.whiteKing.getPosition()
 
+        # Get king
+        king: King = self.whiteKing if playerTurn else self.blackKing
+
+        # If there are any checks -> get the validMoves
         check = False
-        # if are any checks -> get the validMoves
-        checks, pins = self.checksAndPins(kingPosition, playerTurn)
+        checks, pins = self.checksAndPins(king.getPosition(), playerTurn)
         if len(checks) > 0:
-            king: King = self.board[kingPosition[0]][kingPosition[1]]
             validMoves = self.escapeCheck(king, checks, pins, self.playerTurn)
             check = True
 
         return validMoves, check, pins
 
+
     def guiToBoard(self, pointA, pointB, check, pins, validMoves):
         pieceMoved: Piece = self.board[pointA[0]][pointA[1]]
-        pieceCaptured = self.board[pointB[0]][pointB[1]]
+        pieceCaptured: Piece = self.board[pointB[0]][pointB[1]]
         move = Move(pointA, pointB, pieceMoved, pieceCaptured)
 
-        # # en passant check
-        # if type(pieceMoved) == Pawn and pieceCaptured == 0:
-        #     direction = 1 if board.playerTurn else -1
-        #     if 0<= player_move[1][0] - direction <= 7 and type(board.board[player_move[1][0] - direction][player_move[1][1]]) == Pawn:
-        #         pieceCaptured = board.board[player_move[1][0] - direction][player_move[1][1]]
-        #         move = Move(player_move[0], player_move[1], pieceMoved, pieceCaptured)
         if pieceMoved == 0 :
             print("not a valid move!")
             return
+        
+        # check if it is player's turn
         if pieceMoved.team == self.playerTurn:
             if check:
                 print("CHECK!")
@@ -465,17 +454,20 @@ class Board:
                 else:
                     print("not valid move")
             else:
-                # check stalemate
-                stalemate = self.isStalemate(self.playerTurn, pins)
+                # Check stalemate
+                stalemate = self.isStalemate(self.playerTurn)
                 if stalemate:
                     print("STALEMATE")
                 if pieceMoved not in pins:
+                    # check after the move there is a check
                     self.move(move)
-                    # Am I in check after move
                     validMoves, check, pins = self.isCheck(not self.playerTurn)
                     if check:
-                        print("not a valid move")
+                        print("not valid move")
                         self.undoMove()
+                else:
+                    print("Piece is pinned")
+
         else:
             print("Not your turn!")
 
