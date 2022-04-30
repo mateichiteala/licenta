@@ -20,7 +20,7 @@ class Pawn(Piece):
         if 0 <= rowI + direction <=7 and board[rowI+direction][colI] == 0:
             # move 1 square
             moves.append(Move((rowI, colI), (rowI+direction, colI), pieceMoved, 0))
-            if 0 <= rowI + 2* direction <=7 and board[rowI+2*direction][colI] == 0:
+            if 0 <= rowI + 2* direction <=7 and board[rowI+2*direction][colI] == 0 and self.initialPosition == [rowI, colI]:
                 # move 2 squares
                 moves.append(Move((rowI, colI), (rowI+2*direction, colI), pieceMoved, 0))
         
@@ -29,7 +29,7 @@ class Pawn(Piece):
                 pieceCaptured = board[rowI + direction][colI + i]
                 moves.append(Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, pieceCaptured))
             # enPassant
-            if (7>= colI + i >= 0 and 7>= rowI >= 0) and type(board[rowI][colI + i]) == Pawn and board[rowI][colI + i] == _board.enPassantPiece:
+            if (7>= colI + i >= 0 and 7>= rowI >= 0) and type(board[rowI][colI + i]) == Pawn and board[rowI][colI + i].team != self.team and board[rowI][colI + i] == _board.enPassantPiece:
                 move = Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, 0)
                 moves.append(move)
 

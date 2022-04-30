@@ -1,3 +1,4 @@
+from tkinter.tix import Tree
 from typing import List
 from xmlrpc.client import Boolean
 from pieces.bishop import Bishop
@@ -435,41 +436,63 @@ class Board:
 
         return validMoves, check, pins
 
+    def validMovesPiece(self, point):
+        row = point[0]
+        col = point[1]
+        validMoves = list()
+        pieceSelected: Piece = self.board[row][col]
 
-    def guiToBoard(self, pointA, pointB, check, pins, validMoves):
+        if pieceSelected != 0:
+            moves = pieceSelected.getMoves(self)
+            move: Move
+            for move in moves:
+                self.move(move)
+                _, check, _ = self.isCheck(not self.playerTurn)
+                if check == False:
+                    validMoves.append(move)
+                self.undoMove()
+
+        return validMoves
+
+    def guiToBoard(self, pointA, pointB, validMoves):
         pieceMoved: Piece = self.board[pointA[0]][pointA[1]]
         pieceCaptured: Piece = self.board[pointB[0]][pointB[1]]
         move = Move(pointA, pointB, pieceMoved, pieceCaptured)
 
-        if pieceMoved == 0 :
-            print("not a valid move!")
-            return
-        
-        # check if it is player's turn
-        if pieceMoved.team == self.playerTurn:
-            if check:
-                print("CHECK!")
-                if move in validMoves:
-                    self.move(move)
-                else:
-                    print("not valid move")
-            else:
-                # Check stalemate
-                stalemate = self.isStalemate(self.playerTurn)
-                if stalemate:
-                    print("STALEMATE")
-                if pieceMoved not in pins:
-                    # check after the move there is a check
-                    self.move(move)
-                    validMoves, check, pins = self.isCheck(not self.playerTurn)
-                    if check:
-                        print("not valid move")
-                        self.undoMove()
-                else:
-                    print("Piece is pinned")
+        if move in validMoves:
+            self.move(move)
+            return True
 
-        else:
-            print("Not your turn!")
+        return False
+        # if pieceMoved == 0 :
+        #     print("not a valid move!")
+        #     return
+        
+        # # check if it is player's turn
+        # if pieceMoved.team == self.playerTurn:
+        #     if check:
+        #         print("CHECK!")
+        #         if move in validMoves:
+        #             self.move(move)
+        #         else:
+        #             print("not valid move")
+        #     else:
+        #         # Check stalemate
+        #         stalemate = self.isStalemate(self.playerTurn)
+        #         if stalemate:
+        #             print("STALEMATE")
+        #         if pieceMoved not in pins:
+        #             # check after the move there is a check
+        #             self.move(move)
+        #             validMoves, check, pins = self.isCheck(not self.playerTurn)
+        #             if check:
+        #                 print("not valid move")
+        #                 self.undoMove()
+        #         else:
+        #             print("Piece is pinned")
+
+        # else:
+        #     print("Not your turn!")
 
 
 if __name__ == '__main__':
