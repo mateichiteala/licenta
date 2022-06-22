@@ -1,5 +1,8 @@
+from multiprocessing import Process, Queue
 from pickle import TRUE
+# from queue import Queue
 from re import S
+import re
 from tkinter.tix import Tree
 from turtle import Screen
 import pygame
@@ -8,6 +11,7 @@ from pieces.pawn import Pawn
 from pieces.piece import Piece
 from pieces.move import Move
 import ai
+import monteCarlo
 
 WIDTH = 512
 HEIGHT = 512
@@ -77,9 +81,9 @@ class Gui():
         checkmate = False
         stalemate = False
         # true - human, false - computer
-        playerOne = True
+        playerOne = False
         playerTwo = False
-
+        AIThinking = False
         while running:
             humanTurn = (board.playerTurn and playerOne) or (not board.playerTurn and playerTwo)
             for e in pygame.event.get():
@@ -132,6 +136,8 @@ class Gui():
 
                                 else:
                                     print("not a valid move")
+                                    square_selected = ()
+                                    player_move.clear()
                             else:
                                 if board.board[square_selected[0]][square_selected[1]] != 0 and board.board[square_selected[0]][square_selected[1]].team == board.playerTurn:
                                     validMoves = board.validMovesPiece(square_selected)
@@ -144,6 +150,10 @@ class Gui():
                 elif e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_z:
                         board.undoMove()
+                        # if AIThinking:
+                        #     moveFinderProcess.terminate()
+                        #     AIThinking = False
+                        #     print("stop thinking")
                         board.printBoard()
                         square_selected = ()
             
@@ -152,14 +162,44 @@ class Gui():
                 if len(validMoves) == 0:
                     while True:
                         print("CHECKMATE")
-                aiMove = ai.bestMoveMinMax(board, validMoves)
+                # aiMove = ai.bestMoveMinMax(board, validMoves)
+                # print(aiMove)
+                aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
                 # aiMove = ai.findBestMove(board, validMoves)
-                # print(aiMove.get())
+                print(aiMove.get())
                 if aiMove is None:
-                    print("sal")
                     aiMove = ai.findRandomMoves(validMoves)
                 board.move(aiMove)
-            
+                # if not AIThinking:
+                #     AIThinking = True
+                #     validMoves = board.allValidMoves(board.playerTurn)
+                #     if len(validMoves) == 0:
+                #         while True:
+                #             print("CHECKMATE")
+                #     AIThinking = True
+                #     print("thinking...")
+                    # returnQueue = Queue()
+                    # moveFinderProcess = Process(target=ai.bestMoveMinMax, args=(board, validMoves, returnQueue, ))
+                    # moveFinderProcess.start()
+                
+                # if not moveFinderProcess.is_alive():
+                #     aiMove: Move = returnQueue.get()
+                #     print("done thinking")
+                #     rowI, colI = aiMove.getInitialPos()
+                #     aiMove.setPieceMoved(board.board[rowI][colI])
+
+                #     rowF, colF = aiMove.getFinalPos()
+                #     aiMove.setPieceCaptured(board.board[rowF][colF])
+
+                #     print(aiMove)
+                    # if AIMove is None:
+                    # aiMove = ai.bestMoveMinMax(board, validMoves)
+                    # aiMove = ai.findBestMove(board, validMoves)
+                    # print(aiMove.get())
+
+                    # board.move(aiMove)
+                    # AIThinking = False
+
             self.drawGameState(screen, board, validMoves, square_selected)  
             if checkmate:
                 self.writeOnBoard(screen, "CHECKMATE")

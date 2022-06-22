@@ -6,6 +6,7 @@ class King(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
         value = 10
         self.castle = True  # on false if king moved
+        self.inCastle = False
         super().__init__(team, type, image, value, row, col, killable)
         
     def getMoves(self, _board):
@@ -22,47 +23,52 @@ class King(Piece):
                 moves.append(Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
         
         # check castle
-        if self.castle:
+        if self.castle and (self.inCastle is False):
             for i in [-4, 3]:
-                rook: Rook = board[rowI][colI + i] 
-                if type(rook) == Rook and rook.castle:
-                    # check if are empty squares between king and rook
-                    empty = True
-                    inc = 1 if i==3 else -1
-                    moves_castle = []
-                    
-                    for j in range(inc, i, inc):
-                        if board[rowI][colI+j] != 0:
-                            empty = False
-                            break
-                        if i == -4:
-                            moves_castle.append(Move((rowI, colI + j + 1), (rowI, colI + j), pieceMoved, 0))
-                        else:
-                            moves_castle.append(Move((rowI, colI + j - 1), (rowI, colI + j), pieceMoved, 0))
-                            
-                    # check if the empty squares are attacked
-                    if empty:
-                        self.castle = False
-                        move: Move
-                        for index, move in enumerate(moves_castle):
-                            _board.move(move)
-                            _board.printBoard()
-                            _, check, _= _board.isCheck(self.team)
-                            if check:
-                                _index = index
-                                while _index >= 0:
-                                    _board.undoMove()
-                                    _index -= 1
-                                self.castle = True
+                # print(rowI, colI)
+                if 0 <= rowI < 8 and 0 <= colI + i < 8:
+                    rook: Rook = board[rowI][colI + i] 
+                    if type(rook) == Rook and rook.castle:
+                        # check if are empty squares between king and rook
+                        empty = True
+                        inc = 1 if i==3 else -1
+                        moves_castle = []
+                        
+                        for j in range(inc, i, inc):
+                            if board[rowI][colI+j] != 0:
+                                empty = False
                                 break
-                        # the empty squares are not attacked
-                        # undo moves
-                        if self.castle == False:
-                            for _ in moves_castle:
-                                print("1")
-                                _board.undoMove()
-                            moves.append(Move((rowI, colI), (rowI, colI + i), pieceMoved, rook))
-                            self.castle = True
+                            if i == -4:
+                                moves_castle.append(Move((rowI, colI + j + 1), (rowI, colI + j), pieceMoved, 0))
+                            else:
+                                moves_castle.append(Move((rowI, colI + j - 1), (rowI, colI + j), pieceMoved, 0))
+                                
+                        # check if the empty squares are attacked
+                        check = True
+                        if empty:
+                            self.inCastle = True
+                            move: Move
+                            for index, move in enumerate(moves_castle):
+                                _board.move(move)
+                                # _board.printBoard()
+                                _, check, _= _board.isCheck(self.team)
+                                if check:
+                                    _index = index
+                                    while _index >= 0:
+                                        _board.undoMove()
+                                        _index -= 1
+                                    self.inCastle = False
+                                    # self.castle = True
+                                    break
+                            # the empty squares are not attacked
+                            # undo moves
+                            if check == False:
+                                for _ in moves_castle:
+                                    _board.undoMove()
+                                moves.append(Move((rowI, colI), (rowI, colI + i), pieceMoved, rook))
+                                # self.castle = True
+                                self.inCastle = False
+
 
                             
         return moves

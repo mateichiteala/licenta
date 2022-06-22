@@ -1,3 +1,5 @@
+from copy import copy
+from multiprocessing import Queue
 import random
 from typing import List
 from board import Board
@@ -10,6 +12,17 @@ CHECKMATE = 1000
 STALEMATE = 0
 global nextMove
 
+# knightScores = [[1, 1, 1, 1, 1, 1, 1, 1],
+#                 [1, 2, 2, 2, 2, 2, 2, 1],
+#                 [1, 2, 3, 3, 3, 3, 2, 1],
+#                 [1, 2, 3, 4, 4, 3, 2, 1],
+#                 [1, 2, 3, 4, 4, 3, 2, 1],
+#                 [1, 2, 3, 3, 3, 3, 2, 1],
+#                 [1, 2, 2, 2, 2, 2, 2, 1],
+#                 [1, 1, 1, 1, 1, 1, 1, 1]
+#             ]
+
+# piecePositonScores = {"N": knightScores}
 def findRandomMoves(validMoves):
     return validMoves[random.randint(0, len(validMoves)-1)]
 
@@ -70,26 +83,31 @@ def scoreMaterial(board: Board):
     for row in board:
         square: Piece
         for square in row:
+            piecePositionScore = 0
             if square != 0 and square.team:
                 score += square.value
             if square != 0 and square.team is False:
                 score -= square.value
     return score
 
-DEPTH = 2
+DEPTH = 3
 
 def bestMoveMinMax(board: Board, validMoves: List[Move]):
     global nextMove
     nextMove = None
+
     random.shuffle(validMoves)
     minimax(board, validMoves, DEPTH, board.playerTurn, -CHECKMATE, CHECKMATE)
+    # print(returnQueue.get().getInitialPos())
     return nextMove
+
 
 def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, alpha, beta):
     global nextMove
 
     if depth == 0:
         return scoreMaterial(board.board)
+
     if playerTurn:
         maxScore = -CHECKMATE
         move:Move
@@ -98,10 +116,12 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
             nextMoves = board.allValidMoves(False)
             score = minimax(board, nextMoves, depth-1, False, alpha, beta)
             board.undoMove()            
+            
             if score > maxScore:
                 maxScore = score
                 if depth == DEPTH:
                     nextMove = move
+                    
             alpha = max([alpha, score])
             if beta <= alpha:
                 break

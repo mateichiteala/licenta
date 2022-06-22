@@ -11,7 +11,7 @@ class Move():
         self.enPassantPiece = 0
         self.enPassantActive = 0
 
-        self.castle = False
+        self.castleIndex = False # for king and rook
 
     def get(self):
         return (self.rowI, self.colI), (self.rowF, self.colF)
@@ -34,7 +34,8 @@ class Move():
     def setPieceCaptured(self, pieceCaptured):
         self.pieceCaptured = pieceCaptured
 
-    
+    def copy(self):
+        return Move(initialPos=self.getInitialPos(), finalPos=self.getFinalPos(), pieceMoved=None, pieceCaputured=None)
     def __eq__(self, obj) -> bool:
         if self.getInitialPos() == obj.getInitialPos() and self.getFinalPos() == obj.getFinalPos():
             return True

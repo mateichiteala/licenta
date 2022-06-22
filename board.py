@@ -29,7 +29,8 @@ class Board:
         self.enPassantlist = list()
 
         self.indexFirstMoveKingAndRook = []
-
+        self.moves = 0
+        self.undos = 0
 
         self.newBoard()
 
@@ -158,6 +159,8 @@ class Board:
 
             # check for castling
             if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
+                if pieceMoved.team:
+                    self.moves += 1
                 direction = 1 if pieceCaptured.col > pieceMoved.col else -1
                 
                 # update the final position of the king and rook
@@ -181,6 +184,7 @@ class Board:
                 if type(pieceMoved) in [Rook, King] and pieceMoved.castle == True:
                     pieceMoved.castle = False
                     self.indexFirstMoveKingAndRook.append(len(self.logMoves))
+                    move.castleIndex = True
 
                 # new position for the piece
                 pieceMoved.setPosition(pointB[0], pointB[1])
@@ -224,8 +228,7 @@ class Board:
                     # set the new en passant
                     if enPassant == True:
                         presentMove: Move = self.logMoves[len(self.logMoves) - 1]
-                        pieceMoved: Piece = presentMove.getPieceMoved()
-                        self.enPassantPiece = pieceMoved
+                        self.enPassantPiece = presentMove.getPieceMoved()
                     else:
                         self.enPassantPiece == 0
                 
@@ -235,13 +238,22 @@ class Board:
                     self.board[move.rowF][move.colF].setPosition(
                         move.rowF, move.colF)
                 
-                # check if the undo move reset the castle status
-                if len(self.indexFirstMoveKingAndRook) > 0 and len(self.logMoves) == self.indexFirstMoveKingAndRook[len(self.indexFirstMoveKingAndRook)-1]:
+                if move.castleIndex == True:
+                    if pieceCaptured != 0:
+                        pass
+                        # print(pieceCaptured.type)
                     pieceMoved.castle = True
-                    self.indexFirstMoveKingAndRook.pop()
+                    
+                # check if the undo move reset the castle status
+                # if len(self.indexFirstMoveKingAndRook) > 0 and len(self.logMoves) == self.indexFirstMoveKingAndRook[len(self.indexFirstMoveKingAndRook)-1]:
+                    
+                #     pieceMoved.castle = True
+                #     self.indexFirstMoveKingAndRook.pop()
+                
 
                 # Castle was made
                 if type(pieceMoved) == King and type(pieceCaptured) == Rook and pieceCaptured.team == pieceMoved.team:
+
                     # set the king back
                     # self.board[move.rowI][move.colI] = pieceMoved
                     self.board[move.rowI][move.colI].castle = True
@@ -476,6 +488,16 @@ class Board:
 
         return False
 
+    def checkMate(self):
+        validMoves, check, _ = self.isCheck(self.playerTurn)
+        # stalemate = self.isStalemate(self.playerTurn)
+
+        # If player in check and the player has no valid move to make -> checkmate
+        if check and len(validMoves) == 0:
+            print("CHECKMATE")
+            # checkmate = True
+            return True
+        return False
 
 if __name__ == '__main__':
     pass
