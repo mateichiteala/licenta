@@ -120,7 +120,7 @@ class Board:
         direction = 1 if self.playerTurn else -1
         if 0 <= move.rowF - direction <= 7:
             # check if pieceCaptured == 0 + check the piece behind the pieceCaptured is a pawn + the piece has enPassnt activated
-            if move.getPieceCaptured() == 0 and type(self.board[move.rowF - direction][move.colF]) == Pawn and self.board[move.rowF - direction][move.colF] == self.enPassantPiece:
+            if move.getPieceCaptured() == 0 and type(self.board[move.rowF - direction][move.colF]) == Pawn and self.board[move.rowF - direction][move.colF].team != self.playerTurn and self.board[move.rowF - direction][move.colF] == self.enPassantPiece:
                 # set the new piece captured + set that move was en passant
                 move.pieceCaptured =  self.board[move.rowF - direction][move.colF]
                 move.enPassantPiece = self.board[move.rowF - direction][move.colF] 
@@ -448,6 +448,15 @@ class Board:
 
         return validMoves, check, pins
 
+    def getAllPiecesByTypeAndTurn(self, type:str, playerTurn: bool):
+        pieces = list()
+        for i in range(8):
+            for j in range(8):
+                piece: Piece = self.board[i][j]
+                if piece != 0 and piece.type == type and piece.team == playerTurn:
+                    pieces.append(piece)
+        return pieces
+
     def validMovesPiece(self, point: Union[tuple, Piece]):
         validMoves = list()
         if type(point) == tuple:
@@ -484,9 +493,9 @@ class Board:
 
         if move in validMoves:
             self.move(move)
-            return True
+            return True, move
 
-        return False
+        return False, move
 
     def checkMate(self):
         validMoves, check, _ = self.isCheck(self.playerTurn)

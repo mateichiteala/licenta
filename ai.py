@@ -6,7 +6,7 @@ from board import Board
 from pieces.move import Move
 
 from pieces.piece import Piece
-
+from zobrist import ZobristClass
 
 CHECKMATE = 1000
 STALEMATE = 0
@@ -91,14 +91,18 @@ def scoreMaterial(board: Board):
     return score
 
 DEPTH = 3
+zob = ZobristClass()
 
 def bestMoveMinMax(board: Board, validMoves: List[Move]):
     global nextMove
     nextMove = None
 
     random.shuffle(validMoves)
+    zob.openConnection()
     minimax(board, validMoves, DEPTH, board.playerTurn, -CHECKMATE, CHECKMATE)
     # print(returnQueue.get().getInitialPos())
+    zob.closeConnection()
+
     return nextMove
 
 
@@ -106,7 +110,17 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
     global nextMove
 
     if depth == 0:
-        return scoreMaterial(board.board)
+        hash = zob.computeHash(board.board)
+        result = zob.checkHash(hash)
+        if result:
+            val = zob.getValueFromHash(hash)
+            print("sal", val)
+            return val
+        else:
+            val = scoreMaterial(board.board)
+            zob.storeValue(hash, val)
+            return val
+        # return scoreMaterial(board.board)
 
     if playerTurn:
         maxScore = -CHECKMATE

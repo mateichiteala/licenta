@@ -1,6 +1,8 @@
 import copy
+import imp
 import random
 from ai import DEPTH
+import pieces.move as mv
 from pieces.move import Move
 from pieces.piece import Piece
 import numpy as np
@@ -165,7 +167,7 @@ class MonteCarloTreeSearchNode():
         self.untried_moves = self.untried_actions()
         self.depth = 6
         self.playerTurn = True if self.board.playerTurn is True else False
-        print(self.playerTurn)
+        # print(self.playerTurn)
         # self.playerTurn = copy.deepcopy(self.board.playerTurn)
         self.moveMade = None
 
@@ -176,7 +178,7 @@ class MonteCarloTreeSearchNode():
         return len(self.untried_moves) == 0
 
     def is_game_over(self):
-        print(self.depth)
+        # print(self.depth)
         if self.depth == 0:
             return True
         else:
@@ -238,7 +240,7 @@ class MonteCarloTreeSearchNode():
     def simulation(self):
         count_moves = 0
         while not self.is_game_over():
-            print(self.board.playerTurn)
+            # print(self.board.playerTurn)
             possible_moves = self.board.allValidMoves(self.board.playerTurn)
             move: Move = random.choice(possible_moves)
             self.board.move(move)
@@ -291,18 +293,25 @@ def scoreMaterial(board):
 
 def main():
     initial_board = Board()
-    root = MonteCarloTreeSearchNode(board = initial_board)
-    moveMade: Move = root.best_move()
-    
-    initial_board.move(moveMade)
-    print(moveMade.get())
-    # 2
+    print(mv.fromPNGtoMove("O-O", initial_board))
+    import random
+    with open('Games.txt') as f:
+        lines = [line.rstrip() for line in f]
+        
+    print(lines[0].split()[0])
     # root = MonteCarloTreeSearchNode(board = initial_board)
     # moveMade: Move = root.best_move()
-
+    
     # initial_board.move(moveMade)
     # print(moveMade.get())
-    # initial_board.printBoard()
+    # print(moveMade.getChessNotation())
+    # # 2
+    # # root = MonteCarloTreeSearchNode(board = initial_board)
+    # # moveMade: Move = root.best_move()
+
+    # # initial_board.move(moveMade)
+    # # print(moveMade.get())
+    # # initial_board.printBoard()
 
 
 

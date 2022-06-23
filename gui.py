@@ -12,6 +12,7 @@ from pieces.piece import Piece
 from pieces.move import Move
 import ai
 import monteCarlo
+import pieces.move as mv
 
 WIDTH = 512
 HEIGHT = 512
@@ -81,9 +82,18 @@ class Gui():
         checkmate = False
         stalemate = False
         # true - human, false - computer
-        playerOne = False
+        playerOne = True
         playerTwo = False
         AIThinking = False
+
+        opening = True
+        openingMoves = []
+
+        # Read openings
+        with open('Games.txt') as f:
+            lines = [line.rstrip() for line in f]
+
+        
         while running:
             humanTurn = (board.playerTurn and playerOne) or (not board.playerTurn and playerTwo)
             for e in pygame.event.get():
@@ -108,13 +118,14 @@ class Gui():
 
                             # the player does a move
                             if len(player_move) == 2:
-                                moveMade = board.guiToBoard(player_move[0], player_move[1], validMoves)
+                                moveMade, move = board.guiToBoard(player_move[0], player_move[1], validMoves)
                                 board.printBoard()
-
                                 square_selected = ()
                                 player_move.clear()
 
                                 if moveMade:
+                                    print(move.fromMoveToPNG())
+                                    openingMoves.append(move.fromMoveToPNG())
                                     # Check if the next player in stalemate, check or checkmate
                                     # Is the player in check? Pins ? Valid moves ?
                                     validMoves, check, _ = board.isCheck(board.playerTurn)
@@ -158,47 +169,90 @@ class Gui():
                         square_selected = ()
             
             if not humanTurn:
+                print(openingMoves)
+                if len(openingMoves) > 10:
+                    opening = False
+
+                moveMade = False
                 validMoves = board.allValidMoves(board.playerTurn)
                 if len(validMoves) == 0:
                     while True:
                         print("CHECKMATE")
-                # aiMove = ai.bestMoveMinMax(board, validMoves)
-                # print(aiMove)
-                aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
-                # aiMove = ai.findBestMove(board, validMoves)
-                print(aiMove.get())
-                if aiMove is None:
-                    aiMove = ai.findRandomMoves(validMoves)
-                board.move(aiMove)
-                # if not AIThinking:
-                #     AIThinking = True
-                #     validMoves = board.allValidMoves(board.playerTurn)
-                #     if len(validMoves) == 0:
-                #         while True:
-                #             print("CHECKMATE")
-                #     AIThinking = True
-                #     print("thinking...")
-                    # returnQueue = Queue()
-                    # moveFinderProcess = Process(target=ai.bestMoveMinMax, args=(board, validMoves, returnQueue, ))
-                    # moveFinderProcess.start()
+
+
+                if opening == True and len(openingMoves) > 0:
+                    check = False
+                    for index, line in enumerate(lines):
+                        openeingMoves_str = " ".join([str(item) for item in openingMoves])
+                        if line.startswith(openeingMoves_str):
+                            check = True
+                            pngMove = line.split()[len(openingMoves)]
+                            openingMoves.append(pngMove)
+                            pos = mv.fromPNGtoMove(pngMove, board)
+                            # print(pngMove)
+
+                            if pos is None:
+                                opening = False
+                                # print("sal")
+                                break
+                            # print(pos, openingMoves)
+                            moveMade, move = board.guiToBoard(pos[0], pos[1], validMoves)
+                            if moveMade is False:
+                                opening = False
+                            break
+                    if check is False:
+                        opening = False
+
+                if len(openingMoves) == 0:
+                    # avem deschidere
+                    import random
+                    openingLine = random.choice(lines)
+                    # print(openingLine.split(" ")[0])
+                    pngMove = openingLine.split()[0]
+                    openingMoves.append(pngMove)
+                    pos = mv.fromPNGtoMove(pngMove, board)
+                    print(pngMove)
+                    board.guiToBoard(pos[0], pos[1], validMoves)
+                    moveMade = True
                 
-                # if not moveFinderProcess.is_alive():
-                #     aiMove: Move = returnQueue.get()
-                #     print("done thinking")
-                #     rowI, colI = aiMove.getInitialPos()
-                #     aiMove.setPieceMoved(board.board[rowI][colI])
-
-                #     rowF, colF = aiMove.getFinalPos()
-                #     aiMove.setPieceCaptured(board.board[rowF][colF])
-
-                #     print(aiMove)
-                    # if AIMove is None:
-                    # aiMove = ai.bestMoveMinMax(board, validMoves)
+                if moveMade is False:
+                    aiMove = ai.bestMoveMinMax(board, validMoves)
+                    # print(aiMove)
+                    # aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
                     # aiMove = ai.findBestMove(board, validMoves)
                     # print(aiMove.get())
+                    if aiMove is None:
+                        aiMove = ai.findRandomMoves(validMoves)
+                    board.move(aiMove)
+                    # if not AIThinking:
+                    #     AIThinking = True
+                    #     validMoves = board.allValidMoves(board.playerTurn)
+                    #     if len(validMoves) == 0:
+                    #         while True:
+                    #             print("CHECKMATE")
+                    #     AIThinking = True
+                    #     print("thinking...")
+                        # returnQueue = Queue()
+                        # moveFinderProcess = Process(target=ai.bestMoveMinMax, args=(board, validMoves, returnQueue, ))
+                        # moveFinderProcess.start()
+                    
+                    # if not moveFinderProcess.is_alive():
+                    #     aiMove: Move = returnQueue.get()
+                    #     print("done thinking")
+                    #     rowI, colI = aiMove.getInitialPos()
+                    #     aiMove.setPieceMoved(board.board[rowI][colI])
 
-                    # board.move(aiMove)
-                    # AIThinking = False
+                    #     rowF, colF = aiMove.getFinalPos()
+                    #     aiMove.setPieceCaptured(board.board[rowF][colF])
+
+                    #     print(aiMove)
+                        # if AIMove is None:
+                        # aiMove = ai.bestMoveMinMax(board, validMoves)
+                        # aiMove = ai.findBestMove(board, validMoves)
+                        # print(aiMove.get())
+
+                        # board.move(aiMove)
+                        # AIThinking = False
 
             self.drawGameState(screen, board, validMoves, square_selected)  
             if checkmate:
