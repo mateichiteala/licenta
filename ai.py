@@ -11,6 +11,8 @@ from zobrist import ZobristClass
 CHECKMATE = 1000
 STALEMATE = 0
 global nextMove
+global new_hashes
+
 
 # knightScores = [[1, 1, 1, 1, 1, 1, 1, 1],
 #                 [1, 2, 2, 2, 2, 2, 2, 1],
@@ -95,30 +97,31 @@ zob = ZobristClass()
 
 def bestMoveMinMax(board: Board, validMoves: List[Move]):
     global nextMove
+    global new_hashes
     nextMove = None
+    new_hashes = {}
 
     random.shuffle(validMoves)
-    zob.openConnection()
     minimax(board, validMoves, DEPTH, board.playerTurn, -CHECKMATE, CHECKMATE)
-    # print(returnQueue.get().getInitialPos())
-    zob.closeConnection()
-
+    
+    zob.updateHashTable(new_hashes)
+    
     return nextMove
 
 
 def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, alpha, beta):
     global nextMove
+    global new_hashes
 
     if depth == 0:
         hash = zob.computeHash(board.board)
-        result = zob.checkHash(hash)
-        if result:
-            val = zob.getValueFromHash(hash)
-            print("sal", val)
-            return val
+        if hash in zob.hashTable:
+            return zob.hashTable[hash]
         else:
+            print(hash)
             val = scoreMaterial(board.board)
-            zob.storeValue(hash, val)
+            zob.hashTable[hash] = val
+            new_hashes[hash] = val
             return val
         # return scoreMaterial(board.board)
 
