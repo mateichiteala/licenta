@@ -13,8 +13,9 @@ class ZobristTable(Document):
 
 
 class HashTable(Document):
-    hash = LongField(required=True, unique=True)
+    hash = LongField(primary_key=True)
     score = FloatField(required=True)
+    depth = IntField(required=True)
 
     
 class ZobristClass():
@@ -53,27 +54,29 @@ class ZobristClass():
     
     def updateHashTable(self, new_hashes: dict):
         connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
-        # print(new_hashes)
         for key in new_hashes:
-            print(key, new_hashes[key])
             try:
                 HashTable(
-                    hash= key,
-                    score=new_hashes[key]
+                    hash=key,
+                    score=new_hashes[key]["score"],
+                    depth=new_hashes[key]["depth"]
                 ).save()
             except Exception as e:
                 print(e)
         disconnect()
         
     def getHashTableToJson(self):
-        connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
         zob_dict = {}
-        docs = list(HashTable.objects().fields(id=0))
+        connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
+        docs = list(HashTable.objects())
         for obj in docs:
             obj_json = json.loads(obj.to_json())
-            zob_dict[obj_json["hash"]] = obj_json["score"]
+            print(obj_json)
+            zob_dict[obj_json["_id"]] = {
+                "score": obj_json["score"],
+                "depth": obj_json["depth"]
+                }
         disconnect()
-        # print(zob_dict)
         return zob_dict
 
     def getZobristTableToJson(self):
@@ -116,13 +119,6 @@ class ZobristClass():
 if __name__ == "__main__":
     unsignedinteger
     zob = ZobristClass()
-    zob.generateZobristTable()
-    # print(json.dumps(zob.hashTable, indent=4))
-    # print(zob.hashTable[1.2746719316519825e+19])
-    # # print(zob.hashTable[4174999422192297088])
-    # if 4174999422192297088 in zob.hashTable:
-    #     print("sal")
-
-    # print(2**64)
+    print(zob.getHashTableToJson())
 
 

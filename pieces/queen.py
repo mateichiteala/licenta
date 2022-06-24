@@ -5,7 +5,7 @@ from pieces.rook import Rook
 
 class Queen(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
-        value = 9
+        value = 900
         super().__init__(team, type, image, value, row, col, killable)
     def getMoves(self, _board):
         # rook + bishop

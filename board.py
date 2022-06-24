@@ -15,7 +15,7 @@ import pygame
 
 
 class Board:
-    def __init__(self):
+    def __init__(self, shell=True):
         self.board = 0
         self.logMoves = []
         self.IMAGES = {}
@@ -44,6 +44,22 @@ class Board:
         self.board = np.zeros((8, 8), dtype=object)  # matrix of zeros
         self.loadImages()
         self.setBoardPieces()
+
+        
+    def unloadImages(self):
+        for i, row in enumerate(self.board):
+            for j, cell in enumerate(row):
+                if cell != 0:
+                   cell.image = 0
+        self.IMAGES = {}
+
+    def reloadImages(self):
+        self.loadImages()
+        for i, row in enumerate(self.board):
+            for j, cell in enumerate(row):
+                if cell != 0:
+                    t = "w" if cell.team else "b"
+                    cell.image = self.IMAGES[t+cell.type]
 
     def setBoardPieces(self):
         # set pawns

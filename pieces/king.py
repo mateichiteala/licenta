@@ -4,7 +4,7 @@ from pieces.rook import Rook
 
 class King(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
-        value = 10
+        value = 20000
         self.castle = True  # on false if king moved
         self.inCastle = False
         super().__init__(team, type, image, value, row, col, killable)

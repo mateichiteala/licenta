@@ -5,7 +5,7 @@ from pieces.move import Move
 
 class Knight(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
-        value = 3
+        value = 320
         super().__init__(team, type, image, value, row, col, killable)
     def getMoves(self, _board):
         board = _board.board

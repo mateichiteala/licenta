@@ -4,7 +4,7 @@ from pieces.move import Move
 import copy
 class Pawn(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
-        value = 1
+        value = 100
         self.initialPosition = [row, col]
         super().__init__(team, type, image, value, row, col, killable)
     

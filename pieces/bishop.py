@@ -4,7 +4,7 @@ from pieces.move import Move
 
 class Bishop(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
-        value = 3
+        value = 330
         super().__init__(team, type, image, value, row, col, killable)
     def getMoves(self, _board):
         board = _board.board

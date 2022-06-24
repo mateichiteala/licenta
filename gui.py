@@ -90,7 +90,7 @@ class Gui():
         openingMoves = []
 
         # Read openings
-        with open('Games.txt') as f:
+        with open('openings.txt') as f:
             lines = [line.rstrip() for line in f]
 
         
@@ -184,8 +184,9 @@ class Gui():
                     check = False
                     for index, line in enumerate(lines):
                         openeingMoves_str = " ".join([str(item) for item in openingMoves])
-                        if line.startswith(openeingMoves_str):
+                        if line.startswith(openeingMoves_str) and len(line.split()) > len(openingMoves):
                             check = True
+                            print(openingMoves, line)
                             pngMove = line.split()[len(openingMoves)]
                             openingMoves.append(pngMove)
                             pos = mv.fromPNGtoMove(pngMove, board)
@@ -222,6 +223,7 @@ class Gui():
                     # aiMove = ai.findBestMove(board, validMoves)
                     # print(aiMove.get())
                     if aiMove is None:
+                        print("sal")
                         aiMove = ai.findRandomMoves(validMoves)
                     board.move(aiMove)
                     # if not AIThinking:
