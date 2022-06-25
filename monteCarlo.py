@@ -167,8 +167,6 @@ class MonteCarloTreeSearchNode():
         self.untried_moves = self.untried_actions()
         self.depth = 6
         self.playerTurn = True if self.board.playerTurn is True else False
-        # print(self.playerTurn)
-        # self.playerTurn = copy.deepcopy(self.board.playerTurn)
         self.moveMade = None
 
     def is_terminal_node(self):
@@ -178,7 +176,6 @@ class MonteCarloTreeSearchNode():
         return len(self.untried_moves) == 0
 
     def is_game_over(self):
-        # print(self.depth)
         if self.depth == 0:
             return True
         else:
@@ -186,9 +183,6 @@ class MonteCarloTreeSearchNode():
             
     def game_result(self):
         score = scoreMaterial(self.board.board)
-        # if self.board.playerTurn is False:
-            # print("YPPP", self.playerTurn)
-        # print(self.board.playerTurn, self.playerTurn)
         if score == 0:
             return 0
         if self.playerTurn:
@@ -205,7 +199,6 @@ class MonteCarloTreeSearchNode():
     def expansion(self):
         move = self.untried_moves.pop()
         self.board.move(move)
-        print(self.board.playerTurn)
 
         child_node = MonteCarloTreeSearchNode(board=self.board,
                 parent=self)
@@ -233,20 +226,16 @@ class MonteCarloTreeSearchNode():
             else:
                 current_node: MonteCarloTreeSearchNode = current_node.best_child()
                 self.board.move(current_node.moveMade)
-                # print("sal1")
 
         return current_node
 
     def simulation(self):
         count_moves = 0
         while not self.is_game_over():
-            # print(self.board.playerTurn)
             possible_moves = self.board.allValidMoves(self.board.playerTurn)
             move: Move = random.choice(possible_moves)
             self.board.move(move)
             self.depth -= 1
-
-            # print("sal1")
             count_moves += 1
         
         result = self.game_result() 
