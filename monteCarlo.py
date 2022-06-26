@@ -1,5 +1,3 @@
-import copy
-import imp
 import random
 from ai import DEPTH
 import pieces.move as mv
@@ -8,7 +6,7 @@ from pieces.piece import Piece
 import numpy as np
 from board import Board
 from collections import defaultdict
-
+from scores.score import scoreMaterial
 # DEPTH = 2
 # class MonteCarloTreeSearchNode():
 #     def __init__(self, board, parent=None, parent_action=None, depth = 2):
@@ -178,17 +176,12 @@ class MonteCarloTreeSearchNode():
     def is_game_over(self):
         if self.depth == 0:
             return True
-        else:
-            return self.board.checkMate()
             
     def game_result(self):
         score = scoreMaterial(self.board.board)
         if score == 0:
             return 0
-        if self.playerTurn:
-            return 1 if score > 0 else -1
-        else:
-            return 1 if score < 0 else -1
+        return 1 if score > 0 else -1
             
     
     def untried_actions(self):
@@ -204,7 +197,7 @@ class MonteCarloTreeSearchNode():
                 parent=self)
         child_node.moveMade = move
         child_node.depth = self.depth -1
-        child_node.playerTurn = self.playerTurn
+        child_node.playerTurn = not self.playerTurn
         self.children.append(child_node)
         
         return child_node
@@ -212,8 +205,9 @@ class MonteCarloTreeSearchNode():
     def best_child(self, C=0.1):
         choices_weights = list()
         child: MonteCarloTreeSearchNode
+        team = 1 if self.playerTurn else -1 
         for child in self.children:
-            v = child.results[1] - child.results[-1] / child.number_of_visits # wins - loses / number_of_visits
+            v = team * (child.results[1] - child.results[-1]) / child.number_of_visits # white - black / number_of_visits
             value = v + C * np.sqrt(self.number_of_visits / child.number_of_visits)
             choices_weights.append(value)
         return self.children[np.argmax(choices_weights)]
@@ -255,7 +249,7 @@ class MonteCarloTreeSearchNode():
             self.parent.backpropagation(result)
 
     def best_move(self):
-        repeats = 6000
+        repeats = 10000
         aux = self.depth
         for _ in range(repeats):
             self.depth = aux
@@ -268,16 +262,16 @@ class MonteCarloTreeSearchNode():
         return best_child.moveMade
 
 
-def scoreMaterial(board):
-        score = 0
-        for row in board:
-            square: Piece
-            for square in row:
-                if square != 0 and square.team:
-                    score += square.value
-                if square != 0 and square.team is False:
-                    score -= square.value
-        return score
+# def scoreMaterial(board):
+#         score = 0
+#         for row in board:
+#             square: Piece
+#             for square in row:
+#                 if square != 0 and square.team:
+#                     score += square.value
+#                 if square != 0 and square.team is False:
+#                     score -= square.value
+#         return score
 
 
 def main():

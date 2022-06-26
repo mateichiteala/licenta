@@ -13,6 +13,8 @@ class Rook(Piece):
         moves = []
         directions = [(-1, 0), (1, 0), (0, 1), (0, -1)] #  up, down, left, right
         rowI, colI = self.getPosition()
+        if board[rowI][colI] == 0:
+            print("ALO")
         pieceMoved = board[rowI, colI]
 
         for direction in directions:

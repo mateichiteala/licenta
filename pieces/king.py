@@ -14,6 +14,8 @@ class King(Piece):
         directions = [(1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1)]
         moves = []
         rowI, colI = self.getPosition()
+        if board[rowI][colI] == 0:
+            print("ALO")
         pieceMoved = board[rowI][colI]
         for direction in directions:
             rowF = rowI + direction[0]

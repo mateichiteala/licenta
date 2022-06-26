@@ -1,7 +1,8 @@
-from bcrypt import kdf
-from scores.knightScore import knightInfluencedByPawns
+import scores
 import scores.matrix as matrix
-import pawnScore
+from scores.pawnScore import doubledPawmScore, getCountPawns, isolatedPawn
+from scores.bishopScore import bishopPair
+from scores.rookScore import rookOpenFile
 tables={
     "pw": matrix.PawnTableW,
     "Nw": matrix.KnightTableW,
@@ -18,11 +19,13 @@ tables={
 
 }
 def scoreMaterial(board):
-    countPawns = pawnScore.getCountPawns(board)
+    countPawns = getCountPawns(board)
     score = 0
     for row in board:
         for square in row:
             if square !=0:
+                _knightInfluencedByPawnsScore = 0
+                _rookInfluencedByPawnsScore = 0
                 team = "w" if square.team else "b"
                 positionalScore = tables[square.type + team][square.row][square.col]
                 if square.type == "N":
@@ -34,4 +37,10 @@ def scoreMaterial(board):
                     score += square.value + positionalScore + _knightInfluencedByPawnsScore  + _rookInfluencedByPawnsScore
                 if square.team is False:
                     score -= (square.value + positionalScore + _knightInfluencedByPawnsScore + _rookInfluencedByPawnsScore)
+
+    score += bishopPair(board)
+    score += rookOpenFile(board)
+    score += doubledPawmScore(board)
+    score += isolatedPawn(board)
+    
     return score

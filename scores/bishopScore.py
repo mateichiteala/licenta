@@ -8,9 +8,11 @@ def bishopPair(board):
             if square !=0 and square.type == "B":
                score[square.team] += 1
 
-    for key, value in score:
-        score[key] = 50 if value > 1 else 0
+    for key in score:
+        score[key] = 50 if score[key] > 1 else 0
     
-    return score
+    return score[True] - score[False]
+
+
 
         

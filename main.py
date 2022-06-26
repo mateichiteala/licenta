@@ -8,6 +8,7 @@ from gui import Gui
 #     sleep(x)
 #     print("sal")
 #     main(20)
+import time
 if __name__ == "__main__":
     # try:
     #    func_timeout.func_timeout(, main)
@@ -15,3 +16,7 @@ if __name__ == "__main__":
     #     print("Nu a fost gata in 4s!") 
     gui = Gui()
     gui.start()
+    # start_time = time.time()
+    # print(start_time)
+    # start_time = start_time + 60 
+    # print(start_time)

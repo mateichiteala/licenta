@@ -15,6 +15,8 @@ class Pawn(Piece):
         if self.team == False:
             direction = -1
         moves = []
+        if board[rowI][colI] == 0:
+            print("ALO")
         pieceMoved = board[rowI][colI]
         # if rowI == self.initialPosition[0] and board[rowI+direction][colI] == 0:
         if 0 <= rowI + direction <=7 and board[rowI+direction][colI] == 0:

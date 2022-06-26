@@ -14,11 +14,11 @@ def doubledPawmScore(board):
             }
             if square !=0 and square.type == "p":
                 count_pawns[square.team] += 1
-        for key, value in count_pawns:
-            count_pawns[key] *= 25 if value > 1 else 0
+        for key in count_pawns:
+            count_pawns[key] *= 25 if count_pawns[key] > 1 else 0
             score[key] += count_pawns[key]
 
-    return score
+    return score[True] - score[False]
 
 def isolatedPawn(board):
     score = {
@@ -30,11 +30,11 @@ def isolatedPawn(board):
             isolated = True
             if square !=0 and square.type == "p":
                 for directionX in [-1, 1]:
-                    if 0 <= j + directionX <=7 and board[i][j + directionX].type == "p" and board[i][j + directionX].team == square.team:
+                    if 0 <= j + directionX <=7 and board[i][j + directionX] != 0 and board[i][j + directionX].type == "p" and board[i][j + directionX].team == square.team:
                         isolated = False
                         break
                     for directionY in [-1, 1]:
-                        if 0 <= i + directionY <=7 and board[i + directionY][j].type == "p" and board[i][j + directionX].team == square.team:
+                        if 0 <= i + directionY <=7 and board[i + directionY][j] != 0 and board[i + directionY][j].type == "p" and board[i + directionY][j].team == square.team:
                             isolated = False
                             break
                 if isolated:
@@ -42,7 +42,7 @@ def isolatedPawn(board):
     for key in score:
         score[key] *= 15
         
-    return score
+    return score[True] - score[False]
 
 
 def getCountPawns(board):

@@ -11,6 +11,8 @@ class Bishop(Piece):
         directions = [(1, 1), (-1, -1), (-1, 1), (1, -1)] # top-right, down-left. top-left, down-right
         moves = []
         rowI, colI = self.getPosition()
+        if board[rowI][colI] == 0:
+            print("ALO")
         pieceMoved = board[rowI, colI]
         for direction in directions:
             for square in range(1, 8):

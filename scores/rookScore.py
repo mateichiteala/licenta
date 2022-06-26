@@ -14,8 +14,8 @@ def rookOpenFile(board):
             }
             if square !=0 and square.type == "p":
                 count_pawns[square.team] += 1
-        for key, value in count_pawns:
-            count_pawns[key] *= 25 if value > 1 else 0
+        for key in count_pawns:
+            count_pawns[key] *= 25 if count_pawns[key] > 1 else 0
             score[key] += count_pawns[key]
 
-    return score
+    return score[True] - score[False]

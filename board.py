@@ -32,6 +32,10 @@ class Board:
         self.moves = 0
         self.undos = 0
 
+        pieces = ["wp", "bp", "wB", "bB", "wN",
+                  "bN", "wR", "bR", "wQ", "bQ", "wK", "bK"]
+        for piece in pieces:
+            self.IMAGES[piece] = 0
         self.newBoard()
 
     def loadImages(self):
@@ -42,7 +46,7 @@ class Board:
 
     def newBoard(self):
         self.board = np.zeros((8, 8), dtype=object)  # matrix of zeros
-        self.loadImages()
+        # self.loadImages()
         self.setBoardPieces()
 
         
@@ -51,7 +55,14 @@ class Board:
             for j, cell in enumerate(row):
                 if cell != 0:
                    cell.image = 0
-        self.IMAGES = {}
+        pieces = ["wp", "bp", "wB", "bB", "wN",
+                  "bN", "wR", "bR", "wQ", "bQ", "wK", "bK"]
+        for piece in pieces:
+            self.IMAGES[piece] = 0
+        for i in range(8):
+            for j in range(8):
+                if self.board[i][j] != 0:
+                    self.board[i][j].image = 0
 
     def reloadImages(self):
         self.loadImages()
@@ -217,6 +228,7 @@ class Board:
         if len(self.logMoves) != 0:
             move: Move = self.logMoves.pop()
             pieceMoved: Piece = move.getPieceMoved()
+
             pieceCaptured: Piece = move.getPieceCaptured()
             
             # store the position of moved piece/captured piece
@@ -226,6 +238,7 @@ class Board:
 
             # update the position of the moved piece
             self.board[move.rowI][move.colI] = pieceMoved
+            pieceMoved.setPosition(move.rowI, move.colI)
             self.board[move.rowI][move.colI].setPosition(move.rowI, move.colI)
             
 
@@ -516,10 +529,12 @@ class Board:
     def checkMate(self):
         validMoves, check, _ = self.isCheck(self.playerTurn)
         # stalemate = self.isStalemate(self.playerTurn)
-
+        # if check is True:
+        #     # print("sal")
+        #     self.printBoard()
         # If player in check and the player has no valid move to make -> checkmate
         if check and len(validMoves) == 0:
-            print("CHECKMATE")
+            # print("CHECKMATE7")
             # checkmate = True
             return True
         return False

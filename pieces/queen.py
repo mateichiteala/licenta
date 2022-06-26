@@ -10,4 +10,6 @@ class Queen(Piece):
     def getMoves(self, _board):
         # rook + bishop
         rowI, colI = self.getPosition()
+        if _board.board[rowI][colI] == 0:
+            print("ALO")
         return Bishop(self.team, 'B', 0, rowI, colI, False).getMoves(_board) + Rook(self.team, 'R', 0, rowI, colI, False).getMoves(_board)

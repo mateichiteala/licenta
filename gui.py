@@ -22,6 +22,12 @@ SQUARE_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15
 
 class Gui():
+    def __init__(self):
+        self.IMAGES = {}
+        pieces = ["wp", "bp", "wB", "bB", "wN",
+                  "bN", "wR", "bR", "wQ", "bQ", "wK", "bK"]
+        for piece in pieces:
+            self.IMAGES[piece] = pygame.image.load(f"images/{piece}.png")
     def drawBoard(self, screen):
         colors = [pygame.Color("white"), pygame.Color("grey")]
         for row in range(DIMENSION):
@@ -35,7 +41,8 @@ class Gui():
             for col in range(DIMENSION):
                 piece: Piece = board[row][col]
                 if piece != 0:
-                    screen.blit(piece.getImage(), pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                    t = "w" if piece.team else "b"
+                    screen.blit(self.IMAGES[t+ piece.type], pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
     def drawGameState(self, screen, board, validMoves, square_selected):
@@ -133,7 +140,7 @@ class Gui():
 
                                     # If player in check and the player has no valid move to make -> checkmate
                                     if check and len(validMoves) == 0:
-                                        print("CHECKMATE")
+                                        print("CHECKMATE1")
                                         checkmate = True
                                         continue
                                     if stalemate:
@@ -169,7 +176,7 @@ class Gui():
                         square_selected = ()
             
             if not humanTurn:
-                print(openingMoves)
+                # print(openingMoves)
                 if len(openingMoves) > 10:
                     opening = False
 
@@ -177,7 +184,7 @@ class Gui():
                 validMoves = board.allValidMoves(board.playerTurn)
                 if len(validMoves) == 0:
                     while True:
-                        print("CHECKMATE")
+                        print("CHECKMATE2")
 
 
                 if opening == True and len(openingMoves) > 0:
@@ -217,14 +224,17 @@ class Gui():
                     moveMade = True
                 
                 if moveMade is False:
-                    aiMove = ai.bestMoveMinMax(board, validMoves)
+                    # aiMove = ai.bestMoveMinMax(board, validMoves)
                     # print(aiMove)
-                    # aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
+                    aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
                     # aiMove = ai.findBestMove(board, validMoves)
                     # print(aiMove.get())
                     if aiMove is None:
-                        print("sal")
+                        print("AI Move is NONE`")
                         aiMove = ai.findRandomMoves(validMoves)
+                    culoarea = "alb" if board.playerTurn else "negru"
+                    print(f"A mutat {culoarea}")
+                    
                     board.move(aiMove)
                     # if not AIThinking:
                     #     AIThinking = True
@@ -258,7 +268,7 @@ class Gui():
 
             self.drawGameState(screen, board, validMoves, square_selected)  
             if checkmate:
-                self.writeOnBoard(screen, "CHECKMATE")
+                self.writeOnBoard(screen, "CHECKMATE3")
             # if stalemate:
             #     writeOnBoard(screen, "STALEMATE")
             clock.tick(MAX_FPS)
