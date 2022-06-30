@@ -3,19 +3,21 @@ from pieces.move import Move
 from pieces.rook import Rook
 
 class King(Piece):
-    def __init__(self, team, type, image, row, col, killable=False):
+    def __init__(self, team, type, row, col):
         value = 20000
         self.castle = True  # on false if king moved
         self.inCastle = False
-        super().__init__(team, type, image, value, row, col, killable)
+        super().__init__(team, type, value, row, col)
+    
+
+    def setCastle(self, castle: True):
+        self.castle = castle
         
     def getMoves(self, _board):
         board = _board.board
         directions = [(1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1)]
         moves = []
         rowI, colI = self.getPosition()
-        if board[rowI][colI] == 0:
-            print("ALO")
         pieceMoved = board[rowI][colI]
         for direction in directions:
             rowF = rowI + direction[0]
@@ -60,7 +62,6 @@ class King(Piece):
                                         _board.undoMove()
                                         _index -= 1
                                     self.inCastle = False
-                                    # self.castle = True
                                     break
                             # the empty squares are not attacked
                             # undo moves
@@ -68,7 +69,6 @@ class King(Piece):
                                 for _ in moves_castle:
                                     _board.undoMove()
                                 moves.append(Move((rowI, colI), (rowI, colI + i), pieceMoved, rook))
-                                # self.castle = True
                                 self.inCastle = False
 
 

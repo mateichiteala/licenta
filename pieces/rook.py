@@ -2,18 +2,19 @@ from pieces.piece import Piece
 from pieces.move import Move
 
 class Rook(Piece):
-    def __init__(self, team, type, image, row, col, killable=False):
+    def __init__(self, team, type, row, col):
         value = 500
         self.castle = True
-        super().__init__(team, type, image, value, row, col, killable)
+        super().__init__(team, type, value, row, col)
 
+    def setCastle(self, castle: True):
+        self.castle = castle
+        
     def getMoves(self, _board):
         board = _board.board
         moves = []
         directions = [(-1, 0), (1, 0), (0, 1), (0, -1)] #  up, down, left, right
         rowI, colI = self.getPosition()
-        if board[rowI][colI] == 0:
-            print("ALO")
         pieceMoved = board[rowI, colI]
 
         for direction in directions:

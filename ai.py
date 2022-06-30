@@ -86,9 +86,8 @@ def findBestMove(board: Board, validMoves: List[Move]):
 #                 score -= square.value
 #     return score
 
-DEPTH = 5
+DEPTH = 4
 zob = ZobristClass()
-import func_timeout
 import time
 def minimax_timeout(board, validMoves, DEPTH, playerTurn):
     minimax(board, validMoves, DEPTH, playerTurn, -CHECKMATE, CHECKMATE)
@@ -107,28 +106,12 @@ def bestMoveMinMax(board: Board, validMoves: List[Move]):
     undoes = 0
     index_nextMove = 0
 
-    # board.unloadImages()
-
-    # board_copy = deepcopy(board)
-    # validMoves_copy = deepcopy(validMoves)
-    # board.reloadImages()
     random.shuffle(validMoves)
     start_time = time.time()
-    end_time = start_time + 60
+    end_time = start_time + 60*6
+    print("alpha-beta")
     minimax(board, validMoves, DEPTH, board.playerTurn, -CHECKMATE, CHECKMATE, end_time)
-    # try:
-    #    return func_timeout.func_timeout(60*2, minimax_timeout, args=[board_copy, validMoves_copy, DEPTH, board_copy.playerTurn])
-    # except func_timeout.FunctionTimedOut as e:
-    #     print("Nu a fost gata in 60s!")
-        # while moves - undoes :
-            # moves -= 1
-            # print("undo")
-            # board.undoMove()
-
-    # minimax(board, validMoves, DEPTH, board.playerTurn, -CHECKMATE, CHECKMATE)
     zob.updateHashTable(new_hashes)
-    # if nextMove != None:
-    #     nextMove = validMoves[index_nextMove]
     return nextMove
 
 
@@ -139,6 +122,10 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
     global undoes
     global index_nextMove
     index_nextMove = 0
+
+    resp = board.statusBoard()
+    if resp == 2:
+        return 5000 if board.playerTurn else -5000
 
     if depth == 0:
         hash = zob.computeHash(board.board)
@@ -152,7 +139,6 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
         move:Move
         for index, move in enumerate(validMoves):
             board.move(move)
-            moves += 1
             hash = zob.computeHash(board.board)
             # if hash not in zob.hashTable or zob.hashTable[hash]["depth"] < depth-1:
 
@@ -169,7 +155,6 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
                     index_nextMove = index
                         
             board.undoMove()  
-            undoes += 1
 
             alpha = max([alpha, score])
             if beta <= alpha or time.time() > end_time:
@@ -190,7 +175,6 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
         move: Move
         for index, move in enumerate(validMoves):
             board.move(move)
-            moves += 1
 
             hash = zob.computeHash(board.board)
             if hash in zob.hashTable and zob.hashTable[hash]["depth"] > depth-1:
@@ -207,7 +191,6 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
                 
             
             board.undoMove()
-            undoes += 1
             
             beta = min([beta, score])
             if beta <= alpha or time.time() > end_time:

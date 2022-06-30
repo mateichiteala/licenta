@@ -4,12 +4,11 @@ from pieces.bishop import Bishop
 from pieces.rook import Rook
 
 class Queen(Piece):
-    def __init__(self, team, type, image, row, col, killable=False):
+    def __init__(self, team, type, row, col):
         value = 900
-        super().__init__(team, type, image, value, row, col, killable)
+        super().__init__(team, type, value, row, col)
+
     def getMoves(self, _board):
         # rook + bishop
         rowI, colI = self.getPosition()
-        if _board.board[rowI][colI] == 0:
-            print("ALO")
-        return Bishop(self.team, 'B', 0, rowI, colI, False).getMoves(_board) + Rook(self.team, 'R', 0, rowI, colI, False).getMoves(_board)
+        return Bishop(self.team, 'B', rowI, colI).getMoves(_board) + Rook(self.team, 'R', rowI, colI).getMoves(_board)

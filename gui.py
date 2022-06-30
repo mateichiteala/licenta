@@ -26,6 +26,12 @@ MAX_FPS = 15
 
 class Gui():
     def __init__(self):
+        self.status_dict = {
+            0: "CONTINUE",
+            1: "CHECK",
+            2: "CHECKMATE",
+            3: "STALEMATE"
+        }
         self.IMAGES = {}
         pieces = ["wp", "bp", "wB", "bB", "wN",
                   "bN", "wR", "bR", "wQ", "bQ", "wK", "bK"]
@@ -91,9 +97,8 @@ class Gui():
         checkmate = False
         stalemate = False
         # true - human, false - computer
-        playerOne = True
-        playerTwo = True
-        AIThinking = False
+        playerOne = False
+        playerTwo = False
 
         opening = True
         openingMoves = []
@@ -128,57 +133,33 @@ class Gui():
                             # the player does a move
                             if len(player_move) == 2:
                                 moveMade, move = board.guiToBoard(player_move[0], player_move[1], validMoves)
-                                board.printBoard()
                                 square_selected = ()
                                 player_move.clear()
-
                                 if moveMade:
-                                    print(move.fromMoveToPNG())
                                     openingMoves.append(move.fromMoveToPNG())
-                                    # Check if the next player in stalemate, check or checkmate
-                                    # Is the player in check? Pins ? Valid moves ?
-                                    validMoves, check, _ = board.isCheck(board.playerTurn)
-                                    stalemate = board.isStalemate(board.playerTurn)
-
-                                    # If player in check and the player has no valid move to make -> checkmate
-                                    if check and len(validMoves) == 0:
-                                        print("CHECKMATE1")
-                                        checkmate = True
-                                        continue
-                                    if stalemate:
-                                        print("STALEMATE")
-                                        stalemate = True
-                                        continue
-                                        # running = False
-                                    if check and len(validMoves) > 0:
-                                        print("CHECK")
-                                        # running = False
-
+                                    resp = board.statusBoard()
+                                    print(self.status_dict[resp])
                                 else:
-                                    print("not a valid move")
+                                    print("Not a valid move")
                                     square_selected = ()
                                     player_move.clear()
                             else:
-                                if board.board[square_selected[0]][square_selected[1]] != 0 and board.board[square_selected[0]][square_selected[1]].team == board.playerTurn:
+                                piece: Piece = board.board[square_selected[0]][square_selected[1]]
+                                if piece != 0 and piece.team == board.playerTurn:
                                     validMoves = board.validMovesPiece(square_selected)
                                     self.drawGameState(screen, board, validMoves, square_selected)
                                 else:
-                                    print("not your turn")
+                                    print("Not your turn")
                                     square_selected = ()
                                     player_move.clear()
             
                 elif e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_z:
                         board.undoMove()
-                        # if AIThinking:
-                        #     moveFinderProcess.terminate()
-                        #     AIThinking = False
-                        #     print("stop thinking")
                         board.printBoard()
                         square_selected = ()
             
             if not humanTurn:
-                # print(openingMoves)
                 if len(openingMoves) > 10:
                     opening = False
 
@@ -186,7 +167,7 @@ class Gui():
                 validMoves = board.allValidMoves(board.playerTurn)
                 if len(validMoves) == 0:
                     while True:
-                        print("CHECKMATE2")
+                        print("CHECKMATE")
 
 
                 if opening == True and len(openingMoves) > 0:
@@ -213,7 +194,7 @@ class Gui():
                     if check is False:
                         opening = False
 
-                if len(openingMoves) == 0 and False:
+                if len(openingMoves) == 0:
                     # avem deschidere
                     import random
                     openingLine = random.choice(lines)
@@ -222,13 +203,16 @@ class Gui():
                     openingMoves.append(pngMove)
                     pos = mv.fromPNGtoMove(pngMove, board)
                     print(pngMove)
-                    board.guiToBoard(pos[0], pos[1], validMoves)
-                    moveMade = True
+                    if pos is None:
+                        moveMade = False
+                    else:
+                        board.guiToBoard(pos[0], pos[1], validMoves)
+                        moveMade = True
                 
                 if moveMade is False:
-                    aiMove = ai.bestMoveMinMax(board, validMoves)
+                    # aiMove = ai.bestMoveMinMax(board, validMoves)
                     # print(aiMove)
-                    # aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
+                    aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
                     # aiMove = ai.findBestMove(board, validMoves)
                     # print(aiMove.get())
                     if aiMove is None:

@@ -20,7 +20,12 @@ tables={
     "Kw": matrix.KingEW
 
 }
-def scoreMaterial(board):
+
+# def forceEnemyKing(whiteKing, blackKing):
+#     pass
+
+def scoreMaterial(_board):
+    board = _board.board
     countPawns = getCountPawns(board)
     score = 0
     for row in board:
@@ -44,5 +49,6 @@ def scoreMaterial(board):
     score += rookOpenFile(board)
     score += doubledPawmScore(board)
     score += isolatedPawn(board)
+
     
     return score

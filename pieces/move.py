@@ -104,7 +104,7 @@ def fromPNGtoMove(chessNotationMove: str, board):
     pieceType = chessNotationMove[0] 
     finalPosChessNotation = chessNotationMove[-2:]
     # print(finalPosChessNotation)
-    rowF = int(finalPosChessNotation[1]) - 1
+    rowF = 8 - int(finalPosChessNotation[1])
     colF = ord(finalPosChessNotation[0]) - 97
     initialPos = ()
     finalPos = (rowF, colF)

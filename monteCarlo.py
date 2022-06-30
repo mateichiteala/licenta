@@ -1,157 +1,11 @@
 import random
-from ai import DEPTH
 import pieces.move as mv
 from pieces.move import Move
-from pieces.piece import Piece
 import numpy as np
 from board import Board
 from collections import defaultdict
 from scores.score import scoreMaterial
-# DEPTH = 2
-# class MonteCarloTreeSearchNode():
-#     def __init__(self, board, parent=None, parent_action=None, depth = 2):
-#         self.original_board: Board = board
-#         self.board: Board = board # board
-#         self.parent: MonteCarloTreeSearchNode = parent
-#         self.parent_action = parent_action
-#         self.children = []
-#         self._number_of_visits = 0
-#         self._results = defaultdict(int)
-#         self._results[1] = 0
-#         self._results[-1] = 0
-#         self._untried_actions = None
-#         self._untried_actions = self.untried_actions()
-#         self.depth = depth
-#         self.playerTurn = self.board.playerTurn
 
-#         return
-
-#     def untried_actions(self):
-#         self._untried_actions = self.board.allValidMoves(self.board.playerTurn)
-#         return self._untried_actions
-
-#     def q(self):
-#         wins = self._results[1]
-#         loses = self._results[-1]
-#         return wins - loses
-
-#     def n(self):
-#         return self._number_of_visits
-
-#     def expand(self):
-#         action = self._untried_actions.pop()
-#         self.board.move(action)
-#         print("MOVE")
-
-#         next_board = self.board
-
-#         child_node = MonteCarloTreeSearchNode(
-#             next_board, parent=self, parent_action=action)
-#         self.children.append(child_node)
-
-#         return child_node
-    
-#     def is_terminal_node(self):
-#         return self.is_game_over()
-
-#     def rollout(self):
-#         current_rollout_board = self.board
-#         while not self.is_game_over():
-#             possible_moves = current_rollout_board.allValidMoves(self.board.playerTurn)
-#             action = self.rollout_policy(possible_moves)
-#             current_rollout_board.move(action)
-
-#         return self.game_result()
-
-#     def backpropagate(self, result):
-#         self._number_of_visits += 1.
-#         self._results[result] += 1.
-#         if self.parent != None:
-#             self.parent.backpropagate(result)
-
-#     def is_fully_expanded(self):
-#         return len(self._untried_actions) == 0
-
-#     def best_child(self, c_param=0.1):
-#         choices_weights = [(c.q() / c.n()) + c_param * np.sqrt((2 * np.log(self.n()) / c.n())) for c in self.children]
-#         return self.children[np.argmax(choices_weights)]
-
-#     def rollout_policy(self, possible_moves):
-#         return possible_moves[np.random.randint(len(possible_moves))]
-
-#     def _tree_policy(self):
-#         current_node = self
-#         while not current_node.is_terminal_node():
-#             if not current_node.is_fully_expanded():
-#                 return current_node.expand()
-#             else:
-#                 current_node = current_node.best_child()
-#         return current_node
-
-#     def best_action(self):
-#         simulation_no = 200
-#         for _ in range(simulation_no):
-#             v = self._tree_policy()
-#             reward = v.rollout()
-#             v.backpropagate(reward)
-#             self.board = self.original_board
-        
-#         return self.best_child(c_param=0.)
-
-
-#     def is_game_over(self):
-#         if self.depth == 0:
-#             return True
-#         else:
-#             self.depth -= 1
-#             return self.board.checkMate()
-            
-#     def game_result(self):
-#         '''
-#         Modify according to your game or 
-#         needs. Returns 1 or 0 or -1 depending
-#         on your board corresponding to win,
-#         tie or a loss.
-#         '''
-#         score = scoreMaterial(self.board.board)
-#         if score > 0:
-#             return 0
-#         if self.playerTurn:
-#             return 1 if score > 0 else -1
-#         else:
-#             return 1 if score < 0 else -1
-            
-# def scoreMaterial(board):
-#     # validMoves, check, _ =board.isCheck(board.playerTurn)
-#     # if check and len(validMoves) == 0:
-#     #     if board.playerTurn:
-#     #         return -CHECKMATE
-#     #     else:
-#     #         return CHECKMATE
-#     # elif board.isStalemate(board.playerTurn):
-#     #     return STALEMATE
-
-#     score = 0
-#     for row in board:
-#         square: Piece
-#         for square in row:
-#             if square != 0 and square.team:
-#                 score += square.value
-#             if square != 0 and square.team is False:
-#                 score -= square.value
-#     return score
-
-
-
-# def main():
-#     initial_board = Board()
-#     root = MonteCarloTreeSearchNode(board = initial_board)
-#     selected_node = root.best_action()
-#     selected_node.board.printBoard()
-#     return 
-
-# if __name__ == "__main__":
-#     main()
 
 class MonteCarloTreeSearchNode():
     def __init__(self, board: Board, parent=None) -> None:
@@ -174,15 +28,35 @@ class MonteCarloTreeSearchNode():
         return len(self.untried_moves) == 0
 
     def is_game_over(self):
-        if self.depth == 0:
+        # 1
+        resp = self.board.statusBoard()
+        if resp == 2:
             return True
-        if self.board.checkMate() or self.board.isStalemate(self.playerTurn) or self.board.isStalemate(not self.playerTurn):
+        if resp == 3:
+            print("sal")
+            return True
+
+        # 2 
+        resp = self.board.statusBoard(not self.playerTurn)
+        if resp == 2:
+            return True
+        if resp == 3:
+            return True
+        if self.depth == 0:
             return True
         else:
             return False
             
     def game_result(self):
-        score = scoreMaterial(self.board.board)
+        resp = self.board.statusBoard()
+        if resp == 1:
+            return 1 if self.board.playerTurn else -1
+        if resp == 2:
+            return 1 if self.board.playerTurn else -1
+        if resp == 3:
+            return 0
+
+        score = scoreMaterial(self.board)
         if score == 0:
             return 0
         return 1 if score > 0 else -1
@@ -205,6 +79,18 @@ class MonteCarloTreeSearchNode():
         self.children.append(child_node)
         
         return child_node
+    
+
+    def mostSimulationsChild(self):
+        max_visits = 0
+        max_child = 0
+        child: MonteCarloTreeSearchNode
+        for child in self.children:
+            if max_visits < child.number_of_visits:
+                max_visits = child.number_of_visits
+                max_child = child
+        
+        return max_child
 
     def best_child(self, C=0.1):
         choices_weights = list()
@@ -255,7 +141,7 @@ class MonteCarloTreeSearchNode():
             self.parent.backpropagation(result)
 
     def best_move(self):
-        repeats = 1000
+        repeats = 1500
         aux = self.depth
         for i in range(repeats):
             print(i)
@@ -265,7 +151,7 @@ class MonteCarloTreeSearchNode():
             node.backpropagation(result)
 
 
-        best_child: MonteCarloTreeSearchNode = self.best_child()
+        best_child: MonteCarloTreeSearchNode = self.mostSimulationsChild()
         return best_child.moveMade
 
 

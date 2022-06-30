@@ -1,7 +1,6 @@
 import numpy as np
 
-
-PawnTableB = [
+PawnTableW = [
         [0,  0,  0,  0,  0,  0,  0,  0],
         [50, 50, 50, 50, 50, 50, 50, 50],
         [10, 10, 20, 30, 30, 20, 10, 10],
@@ -11,9 +10,9 @@ PawnTableB = [
         [5, 10, 10,-20,-20, 10, 10,  5],
         [0,  0,  0,  0,  0,  0,  0,  0]
 ]
-PawnTableW = np.rot90(np.rot90(PawnTableB))
+PawnTableB = np.rot90(np.rot90(PawnTableW))
 
-KnightTableB = [
+KnightTableW = [
     [-50,-40,-30,-30,-30,-30,-40,-50],
     [-40,-20,  0,  0,  0,  0,-20,-40],
     [-30,  0, 10, 15, 15, 10,  0,-30],
@@ -23,9 +22,9 @@ KnightTableB = [
     [-40,-20,  0,  5,  5,  0,-20,-40],
     [-50,-40,-30,-30,-30,-30,-40,-50]
 ]
-KnightTableW = np.rot90(np.rot90(KnightTableB))
+KnightTableB = np.rot90(np.rot90(KnightTableW))
 
-BishopTableB = [
+BishopTableW = [
     [-20,-10,-10,-10,-10,-10,-10,-20],
     [-10,  0,  0,  0,  0,  0,  0,-10],
     [-10,  0,  5, 10, 10,  5,  0,-10],
@@ -35,9 +34,9 @@ BishopTableB = [
     [-10,  5,  0,  0,  0,  0,  5,-10],
     [-20,-10,-10,-10,-10,-10,-10,-20]
 ]
-BishopTableW = np.rot90(np.rot90(BishopTableB))
+BishopTableB = np.rot90(np.rot90(BishopTableW))
 
-RookTableB = [
+RookTableW = [
     [0,  0,  0,  0,  0,  0,  0,  0],
     [5, 10, 10, 10, 10, 10, 10,  5],
     [-5,  0,  0,  0,  0,  0,  0, -5],
@@ -48,9 +47,9 @@ RookTableB = [
     [0,  -10,  0,  5,  5,  0,  -10,  0]		
 ]
 # print(np.transpose(RookTableB))
-RookTableW = np.rot90(np.rot90(RookTableB))
+RookTableB = np.rot90(np.rot90(RookTableW))
 
-QueenTableB = [
+QueenTableW = [
     [-20,-10,-10, -5, -5,-10,-10,-20],
     [-10,  0,  0,  0,  0,  0,  0,-10],
     [-10,  0,  5,  5,  5,  5,  0,-10],
@@ -60,10 +59,10 @@ QueenTableB = [
     [-10,  0,  5,  0,  0,  0,  0,-10],
     [-20,-10,-10, -5, -5,-10,-10,-20]
 ]
-QueenTableW = np.rot90(np.rot90(QueenTableB))
+QueenTableB = np.rot90(np.rot90(QueenTableW))
 
 
-KingEB = [	
+KingEW = [	
         [-50,-40,-30,-20,-20,-30,-40,-50],
         [-30,-20,-10,  0,  0,-10,-20,-30],
         [-30,-10, 20, 30, 30, 20,-10,-30],
@@ -73,9 +72,9 @@ KingEB = [
         [-30,-30,  0,  0,  0,  0,-30,-30],
         [-50,-30,-30,-30,-30,-30,-30,-50]
 ]
-KingEW = np.rot90(np.rot90(KingEB))
+KingEB = np.rot90(np.rot90(KingEW))
 
-KingMB = [	
+KingMW = [	
         [-30,-40,-40,-50,-50,-40,-40,-30],
         [-30,-40,-40,-50,-50,-40,-40,-30],
         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -85,4 +84,4 @@ KingMB = [
         [20, 20,  0,  0,  0,  0, 20, 20],
         [20, 30, 10,  0,  0, 10, 30, 20]
 ]
-KingMW = np.rot90(np.rot90(KingMB))
+KingMB = np.rot90(np.rot90(KingMW))

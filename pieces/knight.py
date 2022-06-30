@@ -4,9 +4,9 @@ from pieces.move import Move
 
 
 class Knight(Piece):
-    def __init__(self, team, type, image, row, col, killable=False):
+    def __init__(self, team, type, row, col):
         value = 320
-        super().__init__(team, type, image, value, row, col, killable)
+        super().__init__(team, type, value, row, col)
     def getMoves(self, _board):
         board = _board.board
         directions = [(1, -2), (1, 2), (-1, -2), (-1, 2), (2, -1), (2, 1), (-2, -1), (-2, 1)]
