@@ -36,7 +36,7 @@ class Board:
                   "bN", "wR", "bR", "wQ", "bQ", "wK", "bK"]
         for piece in pieces:
             self.IMAGES[piece] = 0
-        self.newBoard()
+        self.newBoard(0)
 
     def loadImages(self):
         pieces = ["wp", "bp", "wB", "bB", "wN",
@@ -44,10 +44,15 @@ class Board:
         for piece in pieces:
             self.IMAGES[piece] = pygame.image.load(f"images/{piece}.png")
 
-    def newBoard(self):
+    def newBoard(self, type: int):
         self.board = np.zeros((8, 8), dtype=object)  # matrix of zeros
         # self.loadImages()
-        self.setBoardPieces()
+        if type == 0:
+            self.setBoardPieces()
+        if type == 1:
+            self.setEndgame1()
+        if type == 2:
+            self.setEndgame2()
 
         
     def unloadImages(self):
@@ -71,49 +76,83 @@ class Board:
                 if cell != 0:
                     t = "w" if cell.team else "b"
                     cell.image = self.IMAGES[t+cell.type]
+    
+
+    def setEndgame1(self):
+        self.board[2][0] = Pawn(False, 'p', self.IMAGES["bp"], 2, 0, False)
+        self.board[3][1] = Pawn(False, 'p', self.IMAGES["bp"], 3, 1, False)
+        self.board[6][7] = Pawn(False, 'p', self.IMAGES["bp"], 6, 7, False)
+
+        self.board[2][6] = Rook(False, 'R', self.IMAGES["bR"], 2, 6, False)
+
+        self.board[7][7] = King(False, 'K', self.IMAGES["wK"], 7, 7, False)
+        self.blackKing = self.board[7][7]
+
+
+
+        self.board[4][1] = Pawn(True, 'p', self.IMAGES["wp"], 4, 1, False)
+
+        self.board[4][3] = Rook(True, 'R', self.IMAGES["bR"], 4, 3, False)
+
+        self.board[6][5] = King(True, 'K', self.IMAGES["wK"], 6, 5, False)
+        self.whiteKing = self.board[6][5]
+
+    def setEndgame2(self):
+        self.board[2][1] = Pawn(False, 'p', self.IMAGES["bp"], 2, 1, False)
+
+        self.board[1][0] = King(False, 'K', self.IMAGES["wK"], 1, 0, False)
+        self.blackKing = self.board[1][0]
+
+
+        self.board[7][5] = Rook(True, 'R', self.IMAGES["bR"], 7, 5, False)
+
+        self.board[2][2] = King(True, 'K', self.IMAGES["wK"], 2, 2, False)
+        self.whiteKing = self.board[2][2]
+
+
 
     def setBoardPieces(self):
         # set pawns
         for i in range(8):
-            self.board[1][i] = Pawn(True, 'p', self.IMAGES["wp"], 1, i, False)
-            self.board[6][i] = Pawn(False, 'p', self.IMAGES["bp"], 6, i, False)
+            self.board[1][i] = Pawn(False, 'p', self.IMAGES["wp"], 1, i, False)
+            self.board[6][i] = Pawn(True, 'p', self.IMAGES["bp"], 6, i, False)
 
         # set bishops
         # white
-        self.board[0][2] = Bishop(True, 'B', self.IMAGES["wB"], 0, 2, False)
-        self.board[0][5] = Bishop(True, 'B', self.IMAGES["wB"], 0, 5, False)
+        self.board[0][2] = Bishop(False, 'B', self.IMAGES["wB"], 0, 2, False)
+        self.board[0][5] = Bishop(False, 'B', self.IMAGES["wB"], 0, 5, False)
         # black
-        self.board[7][2] = Bishop(False, 'B', self.IMAGES["bB"], 7, 2, False)
-        self.board[7][5] = Bishop(False, 'B', self.IMAGES["bB"], 7, 5, False)
+        self.board[7][2] = Bishop(True, 'B', self.IMAGES["bB"], 7, 2, False)
+        self.board[7][5] = Bishop(True, 'B', self.IMAGES["bB"], 7, 5, False)
 
         # set knights
         # white
-        self.board[0][1] = Knight(True, 'N', self.IMAGES["wN"], 0, 1, False)
-        self.board[0][6] = Knight(True, 'N', self.IMAGES["wN"], 0, 6, False)
+        self.board[0][1] = Knight(False, 'N', self.IMAGES["wN"], 0, 1, False)
+        self.board[0][6] = Knight(False, 'N', self.IMAGES["wN"], 0, 6, False)
         # black
-        self.board[7][1] = Knight(False, 'N', self.IMAGES["bN"], 7, 1, False)
-        self.board[7][6] = Knight(False, 'N', self.IMAGES["bN"], 7, 6, False)
+        self.board[7][1] = Knight(True, 'N', self.IMAGES["bN"], 7, 1, False)
+        self.board[7][6] = Knight(True, 'N', self.IMAGES["bN"], 7, 6, False)
 
         # set rooks
         # white
-        self.board[0][0] = Rook(True, 'R', self.IMAGES["wR"], 0, 0, False)
-        self.board[0][7] = Rook(True, 'R', self.IMAGES["wR"], 0, 7, False)
+        self.board[0][0] = Rook(False, 'R', self.IMAGES["wR"], 0, 0, False)
+        self.board[0][7] = Rook(False, 'R', self.IMAGES["wR"], 0, 7, False)
         # black
-        self.board[7][0] = Rook(False, 'R', self.IMAGES["bR"], 7, 0, False)
-        self.board[7][7] = Rook(False, 'R', self.IMAGES["bR"], 7, 7, False)
+        self.board[7][0] = Rook(True, 'R', self.IMAGES["bR"], 7, 0, False)
+        self.board[7][7] = Rook(True, 'R', self.IMAGES["bR"], 7, 7, False)
 
         # set queens
         # white
-        self.board[0][3] = Queen(True, 'Q', self.IMAGES["wQ"], 0, 3, False)
+        self.board[0][3] = Queen(False, 'Q', self.IMAGES["wQ"], 0, 3, False)
         # black
-        self.board[7][3] = Queen(False, 'Q', self.IMAGES["bQ"], 7, 3, False)
+        self.board[7][3] = Queen(True, 'Q', self.IMAGES["bQ"], 7, 3, False)
 
         # set kings
         # white
-        self.board[0][4] = King(True, 'K', self.IMAGES["wK"], 0, 4, False)
-        self.whiteKing = self.board[0][4]
+        self.board[0][4] = King(False, 'K', self.IMAGES["wK"], 0, 4, False)
+        self.whiteKing = self.board[0][4] 
         # black
-        self.board[7][4] = King(False, 'K', self.IMAGES["bK"], 7, 4, False)
+        self.board[7][4] = King(True, 'K', self.IMAGES["bK"], 7, 4, False)
         self.blackKing = self.board[7][4]
 
     def printBoard(self):

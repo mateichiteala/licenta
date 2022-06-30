@@ -176,6 +176,10 @@ class MonteCarloTreeSearchNode():
     def is_game_over(self):
         if self.depth == 0:
             return True
+        if self.board.checkMate() or self.board.isStalemate(self.playerTurn) or self.board.isStalemate(not self.playerTurn):
+            return True
+        else:
+            return False
             
     def game_result(self):
         score = scoreMaterial(self.board.board)
@@ -227,6 +231,8 @@ class MonteCarloTreeSearchNode():
         count_moves = 0
         while not self.is_game_over():
             possible_moves = self.board.allValidMoves(self.board.playerTurn)
+            if len(possible_moves) == 0:
+                self.board.printBoard()
             move: Move = random.choice(possible_moves)
             self.board.move(move)
             self.depth -= 1
@@ -249,9 +255,10 @@ class MonteCarloTreeSearchNode():
             self.parent.backpropagation(result)
 
     def best_move(self):
-        repeats = 10000
+        repeats = 1000
         aux = self.depth
-        for _ in range(repeats):
+        for i in range(repeats):
+            print(i)
             self.depth = aux
             node = self.selection()
             result = node.simulation()

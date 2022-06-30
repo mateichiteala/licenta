@@ -9,13 +9,15 @@ tables={
     "Bw": matrix.BishopTableW,
     "Rw": matrix.RookTableW,
     "Qw": matrix.QueenTableW,
-    "Kw": matrix.KingMW,
+    "Kwm": matrix.KingMW,
     "pb": matrix.PawnTableB,
     "Nb": matrix.KnightTableB,
     "Bb": matrix.BishopTableB,
     "Rb": matrix.RookTableB,
     "Qb": matrix.QueenTableB,
-    "Kb": matrix.KingMB,
+    "Kbm": matrix.KingMB,
+    "Kb": matrix.KingEB,
+    "Kw": matrix.KingEW
 
 }
 def scoreMaterial(board):

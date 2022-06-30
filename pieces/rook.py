@@ -1,7 +1,6 @@
 from pieces.piece import Piece
 from pieces.move import Move
 
-
 class Rook(Piece):
     def __init__(self, team, type, image, row, col, killable=False):
         value = 500

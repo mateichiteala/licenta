@@ -86,7 +86,7 @@ def findBestMove(board: Board, validMoves: List[Move]):
 #                 score -= square.value
 #     return score
 
-DEPTH = 3
+DEPTH = 5
 zob = ZobristClass()
 import func_timeout
 import time

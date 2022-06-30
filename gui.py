@@ -6,6 +6,8 @@ import re
 from tkinter.tix import Tree
 from turtle import Screen
 import pygame
+import pygame_button
+from pygame_button import Button
 from board import Board
 from pieces.pawn import Pawn
 from pieces.piece import Piece
@@ -20,6 +22,7 @@ DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 
 MAX_FPS = 15
+
 
 class Gui():
     def __init__(self):
@@ -81,7 +84,6 @@ class Gui():
         clock = pygame.time.Clock()
         screen.fill(pygame.Color("white"))
         board = Board()
-        
         running = True
         validMoves = []
         square_selected = ()
@@ -90,7 +92,7 @@ class Gui():
         stalemate = False
         # true - human, false - computer
         playerOne = True
-        playerTwo = False
+        playerTwo = True
         AIThinking = False
 
         opening = True
@@ -211,7 +213,7 @@ class Gui():
                     if check is False:
                         opening = False
 
-                if len(openingMoves) == 0:
+                if len(openingMoves) == 0 and False:
                     # avem deschidere
                     import random
                     openingLine = random.choice(lines)
@@ -224,9 +226,9 @@ class Gui():
                     moveMade = True
                 
                 if moveMade is False:
-                    # aiMove = ai.bestMoveMinMax(board, validMoves)
+                    aiMove = ai.bestMoveMinMax(board, validMoves)
                     # print(aiMove)
-                    aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
+                    # aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
                     # aiMove = ai.findBestMove(board, validMoves)
                     # print(aiMove.get())
                     if aiMove is None:
@@ -273,5 +275,4 @@ class Gui():
             #     writeOnBoard(screen, "STALEMATE")
             clock.tick(MAX_FPS)
             pygame.display.flip()
-
 

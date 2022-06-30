@@ -8,7 +8,6 @@ from gui import Gui
 #     sleep(x)
 #     print("sal")
 #     main(20)
-import time
 if __name__ == "__main__":
     # try:
     #    func_timeout.func_timeout(, main)
