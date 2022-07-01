@@ -7,6 +7,7 @@ class King(Piece):
         value = 20000
         self.castle = True  # on false if king moved
         self.inCastle = False
+        self.firstMoveIndex = None
         super().__init__(team, type, value, row, col)
     
 
@@ -48,21 +49,22 @@ class King(Piece):
                                 moves_castle.append(Move((rowI, colI + j - 1), (rowI, colI + j), pieceMoved, 0))
                                 
                         # check if the empty squares are attacked
-                        check = True
+                        check = False
                         if empty:
                             self.inCastle = True
                             move: Move
                             for index, move in enumerate(moves_castle):
                                 _board.move(move)
-                                # _board.printBoard()
-                                _, check, _= _board.isCheck(self.team)
-                                if check:
+                                checks, pins, attackPins = _board.getChecksAndPins(self.team)
+                                if len(checks) > 0:
                                     _index = index
                                     while _index >= 0:
                                         _board.undoMove()
                                         _index -= 1
                                     self.inCastle = False
+                                    check = True
                                     break
+
                             # the empty squares are not attacked
                             # undo moves
                             if check == False:

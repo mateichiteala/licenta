@@ -45,10 +45,21 @@ def scoreMaterial(_board):
                 if square.team is False:
                     score -= (square.value + positionalScore + _knightInfluencedByPawnsScore + _rookInfluencedByPawnsScore)
 
-    score += bishopPair(board)
-    score += rookOpenFile(board)
-    score += doubledPawmScore(board)
-    score += isolatedPawn(board)
+    # score += bishopPair(board)
+    # score += rookOpenFile(board)
+    # score += doubledPawmScore(board)
+    # score += isolatedPawn(board)
+
+    # if _board.status == 1:
+    #     score += -50 if _board.playerTurn else 50
+
+    # if _board.status == 2:
+    #     score += -5000 if _board.playerTurn else 5000
+
+    # if _board.status == 3:
+    #     score = 0
+    
+    
 
     
     return score

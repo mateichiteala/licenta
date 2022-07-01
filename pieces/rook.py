@@ -5,6 +5,7 @@ class Rook(Piece):
     def __init__(self, team, type, row, col):
         value = 500
         self.castle = True
+        self.firstMoveIndex = None
         super().__init__(team, type, value, row, col)
 
     def setCastle(self, castle: True):

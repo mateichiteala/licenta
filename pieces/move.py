@@ -60,7 +60,7 @@ class Move():
 
 
     def fromMoveToPNG(self):
-        initialPos, finalPos = self.getChessNotationMove()
+        _, finalPos = self.getChessNotationMove()
         result = ""
 
         if self.pieceMoved.type == "K" and self.pieceCaptured != 0 and self.pieceCaptured.type == "R" and self.pieceCaptured.team == self.pieceCaptured.team:
@@ -82,7 +82,7 @@ class Move():
         return result
 
 
-def fromPNGtoMove(chessNotationMove: str, board):
+def fromPNGtoMove(chessNotationMove: str, board, pins):
 
     if "O-O" == chessNotationMove:
         initialPos = (0, 4)
@@ -117,7 +117,7 @@ def fromPNGtoMove(chessNotationMove: str, board):
     pieces = board.getAllPiecesByTypeAndTurn(pieceType, board.playerTurn)
 
     for piece in pieces:
-        moves = board.validMovesPiece(piece)
+        moves = board.allValidMoves(board.playerTurn, pins)
         move: Move
         for move in moves:
             if move.getFinalPos() == (rowF, colF):

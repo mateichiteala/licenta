@@ -1,20 +1,16 @@
 from multiprocessing import Process, Queue
 from pickle import TRUE
+import time
 # from queue import Queue
-from re import S
-import re
-from tkinter.tix import Tree
 from turtle import Screen
 import pygame
-import pygame_button
-from pygame_button import Button
 from board import Board
-from pieces.pawn import Pawn
 from pieces.piece import Piece
 from pieces.move import Move
 import ai
 import monteCarlo
 import pieces.move as mv
+import random
 
 WIDTH = 512
 HEIGHT = 512
@@ -106,7 +102,6 @@ class Gui():
         # Read openings
         with open('openings.txt') as f:
             lines = [line.rstrip() for line in f]
-
         
         while running:
             humanTurn = (board.playerTurn and playerOne) or (not board.playerTurn and playerTwo)
@@ -132,21 +127,21 @@ class Gui():
 
                             # the player does a move
                             if len(player_move) == 2:
-                                moveMade, move = board.guiToBoard(player_move[0], player_move[1], validMoves)
+                                response, move = board.guiToBoard(player_move[0], player_move[1])
                                 square_selected = ()
                                 player_move.clear()
-                                if moveMade:
+                                if response:
                                     openingMoves.append(move.fromMoveToPNG())
-                                    resp = board.statusBoard()
-                                    print(self.status_dict[resp])
                                 else:
                                     print("Not a valid move")
                                     square_selected = ()
                                     player_move.clear()
                             else:
-                                piece: Piece = board.board[square_selected[0]][square_selected[1]]
+                                # square was selected
+                                # check if it is a piece
+                                piece: Piece = board.getPieceFromSquare(square_selected)
                                 if piece != 0 and piece.team == board.playerTurn:
-                                    validMoves = board.validMovesPiece(square_selected)
+                                    validMoves = board.getValidMovesForPiece(piece)
                                     self.drawGameState(screen, board, validMoves, square_selected)
                                 else:
                                     print("Not your turn")
@@ -160,49 +155,42 @@ class Gui():
                         square_selected = ()
             
             if not humanTurn:
+                opening = False
                 if len(openingMoves) > 10:
                     opening = False
 
                 moveMade = False
-                validMoves = board.allValidMoves(board.playerTurn)
-                if len(validMoves) == 0:
-                    while True:
-                        print("CHECKMATE")
-
-
                 if opening == True and len(openingMoves) > 0:
                     check = False
                     for index, line in enumerate(lines):
                         openeingMoves_str = " ".join([str(item) for item in openingMoves])
                         if line.startswith(openeingMoves_str) and len(line.split()) > len(openingMoves):
                             check = True
-                            print(openingMoves, line)
                             pngMove = line.split()[len(openingMoves)]
                             openingMoves.append(pngMove)
                             pos = mv.fromPNGtoMove(pngMove, board)
-                            # print(pngMove)
-
+                            
                             if pos is None:
                                 opening = False
-                                # print("sal")
                                 break
-                            # print(pos, openingMoves)
+                            
                             moveMade, move = board.guiToBoard(pos[0], pos[1], validMoves)
+                            
                             if moveMade is False:
                                 opening = False
-                            break
+                                break
+                    
                     if check is False:
                         opening = False
 
-                if len(openingMoves) == 0:
+                if len(openingMoves) == 0 and  False:
                     # avem deschidere
-                    import random
                     openingLine = random.choice(lines)
-                    # print(openingLine.split(" ")[0])
                     pngMove = openingLine.split()[0]
                     openingMoves.append(pngMove)
+
                     pos = mv.fromPNGtoMove(pngMove, board)
-                    print(pngMove)
+
                     if pos is None:
                         moveMade = False
                     else:
@@ -210,48 +198,23 @@ class Gui():
                         moveMade = True
                 
                 if moveMade is False:
+                    validMoves = board.getValidMoves()
                     # aiMove = ai.bestMoveMinMax(board, validMoves)
-                    # print(aiMove)
                     aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
-                    # aiMove = ai.findBestMove(board, validMoves)
-                    # print(aiMove.get())
-                    if aiMove is None:
-                        print("AI Move is NONE`")
-                        aiMove = ai.findRandomMoves(validMoves)
                     culoarea = "alb" if board.playerTurn else "negru"
                     print(f"A mutat {culoarea}")
                     
-                    board.move(aiMove)
-                    # if not AIThinking:
-                    #     AIThinking = True
-                    #     validMoves = board.allValidMoves(board.playerTurn)
-                    #     if len(validMoves) == 0:
-                    #         while True:
-                    #             print("CHECKMATE")
-                    #     AIThinking = True
-                    #     print("thinking...")
-                        # returnQueue = Queue()
-                        # moveFinderProcess = Process(target=ai.bestMoveMinMax, args=(board, validMoves, returnQueue, ))
-                        # moveFinderProcess.start()
-                    
-                    # if not moveFinderProcess.is_alive():
-                    #     aiMove: Move = returnQueue.get()
-                    #     print("done thinking")
-                    #     rowI, colI = aiMove.getInitialPos()
-                    #     aiMove.setPieceMoved(board.board[rowI][colI])
+                    board.aiToBoard(aiMove)
+                    time.sleep(1)
 
-                    #     rowF, colF = aiMove.getFinalPos()
-                    #     aiMove.setPieceCaptured(board.board[rowF][colF])
-
-                    #     print(aiMove)
-                        # if AIMove is None:
-                        # aiMove = ai.bestMoveMinMax(board, validMoves)
-                        # aiMove = ai.findBestMove(board, validMoves)
-                        # print(aiMove.get())
-
-                        # board.move(aiMove)
-                        # AIThinking = False
-
+            print(board.status)
+            if board.status == 3:
+                print("STALEMATE")
+                print("aici")
+                return
+            if board.status == 2:
+                print("CHECKMATE")
+                return
             self.drawGameState(screen, board, validMoves, square_selected)  
             if checkmate:
                 self.writeOnBoard(screen, "CHECKMATE3")

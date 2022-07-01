@@ -31,7 +31,7 @@ class Pawn(Piece):
             
             # enPassant
             if (7>= colI + i >= 0 and 7>= rowI >= 0) and type(board[rowI][colI + i]) == Pawn and board[rowI][colI + i].team != self.team and board[rowI][colI + i] == _board.enPassantPiece:
-                pieceCaptured = board[rowI + direction][colI + i]
+                pieceCaptured = board[rowI][colI + i]
                 move = Move((rowI, colI), (rowI + direction, colI + i), pieceMoved, pieceCaptured)
                 moves.append(move)
 
