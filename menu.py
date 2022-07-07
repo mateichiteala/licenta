@@ -1,87 +1,103 @@
 import pygame
-import button
-
+import pygame_menu
+from gui import Gui
 
 pygame.init()
+surface = pygame.display.set_mode((512, 512))
 
-#create game window
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+def set_difficulty_white(value, index):
+    if index==0:
+        white_depth.hide()
+        white_sim.hide()
+        white_time.hide()
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Main Menu")
+    if index==1:
+        white_depth.show()
+        white_sim.show()
+        white_time.show()
+    if index==2:
+        white_depth.show()
+        white_sim.hide()
+        white_time.show()
 
-#game variables
-game_paused = False
-menu_state = "main"
 
-#define fonts
-font = pygame.font.SysFont("arialblack", 40)
+def set_difficulty_black(value, index):
+    if index==0:
+        black_depth.hide()
+        black_sim.hide()
+        black_time.hide()
 
-#define colours
-TEXT_COL = (255, 255, 255)
+    if index==1:
+        black_depth.show()
+        black_sim.show()
+        black_time.show()
+    if index==2:
+        black_depth.show()
+        black_sim.hide()
+        black_time.show()
 
-#load button images
-resume_img = pygame.image.load("images/menu/button_resume.png").convert_alpha()
-options_img = pygame.image.load("images/menu/button_options.png").convert_alpha()
-quit_img = pygame.image.load("images/menu/button_quit.png").convert_alpha()
-video_img = pygame.image.load('images/menu/button_video.png').convert_alpha()
-audio_img = pygame.image.load('images/menu/button_audio.png').convert_alpha()
-keys_img = pygame.image.load('images/menu/button_keys.png').convert_alpha()
-back_img = pygame.image.load('images/menu/button_back.png').convert_alpha()
 
-#create button instances
-resume_button = button.Button(304, 125, resume_img, 1)
-options_button = button.Button(297, 250, options_img, 1)
-quit_button = button.Button(336, 375, quit_img, 1)
-video_button = button.Button(226, 75, video_img, 1)
-audio_button = button.Button(225, 200, audio_img, 1)
-keys_button = button.Button(246, 325, keys_img, 1)
-back_button = button.Button(332, 450, back_img, 1)
+def start_the_game():
+    _white_time = int(white_time.get_value())
+    _black_time = int(black_time.get_value()) 
 
-def draw_text(text, font, text_col, x, y):
-  img = font.render(text, True, text_col)
-  screen.blit(img, (x, y))
 
-#game loop
-run = True
-while run:
+    playerOne_dict = {"player": 0}
+    playerOne = white.get_value()[1]
+    if playerOne == 1:
+        playerOne_dict["player"] = 1
+        playerOne_dict["ai"]={
+            "depth": int(white_depth.get_value()),
+            "simulations": int(white_sim.get_value()),
+            "time": _white_time
+        }
+    if playerOne == 2:
+        playerOne_dict["player"] = 2
+        playerOne_dict["ai"]={
+            "depth":  int(white_depth.get_value()),
+            "time": _white_time
+        }
 
-  screen.fill((52, 78, 91))
+    playerTwo_dict = {"player": 0}
+    playerTwo = black.get_value()[1]
+    if playerTwo == 1:
+        playerTwo_dict["player"] = 1
+        playerTwo_dict["ai"]={
+            "depth":  int(black_depth.get_value()),
+            "simulations": int(black_sim.get_value()),
+            "time": _black_time
+        }
+    if playerTwo == 2:
+        playerTwo_dict["player"] = 2
+        playerTwo_dict["ai"]={
+            "depth":  int(black_depth.get_value()),
+            "time": _black_time
+        }
 
-  #check if game is paused
-  if game_paused == True:
-    #check menu state
-    if menu_state == "main":
-      #draw pause screen buttons
-      if resume_button.draw(screen):
-        game_paused = False
-      if options_button.draw(screen):
-        menu_state = "options"
-      if quit_button.draw(screen):
-        run = False
-    #check if the options menu is open
-    if menu_state == "options":
-      #draw the different options buttons
-      if video_button.draw(screen):
-        print("Video Settings")
-      if audio_button.draw(screen):
-        print("Audio Settings")
-      if keys_button.draw(screen):
-        print("Change Key Bindings")
-      if back_button.draw(screen):
-        menu_state = "main"
-  else:
-    draw_text("Press SPACE to pause", font, TEXT_COL, 160, 250)
+    # board_type = board.get_value()[1]
+    gui = Gui(playerOne_dict, playerTwo_dict, 0)
+    gui.start()
 
-  #event handler
-  for event in pygame.event.get():
-    if event.type == pygame.KEYDOWN:
-      if event.key == pygame.K_SPACE:
-        game_paused = True
-    if event.type == pygame.QUIT:
-      run = False
+menu = pygame_menu.Menu('Welcome', 512, 512,
+                       theme=pygame_menu.themes.THEME_BLUE)
 
-  pygame.display.update()
+valid_chars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+white = menu.add.selector('White:', [('User', 0), ('AI-Monte Carlo', 1), ('AI-Alpha Beta', 2)], onchange=set_difficulty_white)
+white_depth = menu.add.text_input('Depth White:', default=4, valid_chars=valid_chars).hide()
+white_sim = menu.add.text_input('Simulations white:', default=1000, valid_chars=valid_chars).hide()
+white_time = menu.add.text_input('Time wait for result white:', default=0, valid_chars=valid_chars).hide()
 
-pygame.quit()
+black = menu.add.selector('Black :', [('User', 0), ('AI-Monte Carlo', 1), ('AI-Alpha Beta', 2)], onchange=set_difficulty_black)
+black_depth = menu.add.text_input('Depth Black:', default=4, valid_chars=valid_chars).hide()
+black_sim = menu.add.text_input('Simulations black:', default=1000, valid_chars=valid_chars).hide()
+black_time = menu.add.text_input('Time wait for result black:', default=0, valid_chars=valid_chars).hide()
+
+board = menu.add.selector('Board:', [('Standard', 0), ('endGame1', 1), ('endGame', 2)])
+
+
+
+menu.add.button('Play', start_the_game)
+menu.add.button('Quit', pygame_menu.events.EXIT)
+
+
+menu.mainloop(surface)

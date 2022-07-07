@@ -18,7 +18,7 @@ class HashTable(Document):
     depth = IntField(required=True)
 
     
-class ZobristClass():
+class TranspositionTable():
     def __init__(self) -> None:
         self.zobristTable = self.getZobristTableToJson()
         self.hashTable = self.getHashTableToJson()
@@ -117,8 +117,6 @@ class ZobristClass():
     
 
 if __name__ == "__main__":
-    unsignedinteger
-    zob = ZobristClass()
-    print(zob.getHashTableToJson())
+    pass
 
 

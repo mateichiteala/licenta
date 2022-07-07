@@ -1,6 +1,6 @@
 import scores
 import scores.matrix as matrix
-from scores.pawnScore import doubledPawmScore, getCountPawns, isolatedPawn
+from scores.pawnScore import doubledPawnScore, getCountPawns, isolatedPawn
 from scores.bishopScore import bishopPair
 from scores.rookScore import rookOpenFile
 tables={

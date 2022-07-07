@@ -2,8 +2,9 @@ from pieces.piece import Piece
 from pieces.move import Move
 
 class Rook(Piece):
-    def __init__(self, team, type, row, col):
+    def __init__(self, team, row, col):
         value = 500
+        type = 'R'
         self.castle = True
         self.firstMoveIndex = None
         super().__init__(team, type, value, row, col)
@@ -25,9 +26,12 @@ class Rook(Piece):
                 if 0 <= rowF < 8 and 0 <= colF < 8:  # inside the board 
                     pieceCaptured = board[rowF][colF]
                     if board[rowF][colF] == 0:  # empty square
-                        moves.append(Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
-                    elif board[rowF][colF].team != self.team: # enemy piece and stop searching on that row, col
-                        moves.append(Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
+                        moves.append(
+                            Move((rowI, colI), (rowF, colF),pieceMoved, pieceCaptured))
+                        # enemy piece and stop searching on that row, col
+                    elif board[rowF][colF].team != self.team: 
+                        moves.append(
+                            Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
                         break 
                     else: # my own piece and stop searching on that row, col
                         break

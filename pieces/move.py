@@ -1,4 +1,7 @@
 
+# from board import Board
+
+
 class Move():
     def __init__(self, initialPos, finalPos, pieceMoved=0, pieceCaputured=0):
         self.rowI = initialPos[0]
@@ -82,7 +85,7 @@ class Move():
         return result
 
 
-def fromPNGtoMove(chessNotationMove: str, board, pins):
+def fromPNGtoMove(chessNotationMove: str, board):
 
     if "O-O" == chessNotationMove:
         initialPos = (0, 4)
@@ -117,7 +120,7 @@ def fromPNGtoMove(chessNotationMove: str, board, pins):
     pieces = board.getAllPiecesByTypeAndTurn(pieceType, board.playerTurn)
 
     for piece in pieces:
-        moves = board.allValidMoves(board.playerTurn, pins)
+        moves = board.getValidMoves()
         move: Move
         for move in moves:
             if move.getFinalPos() == (rowF, colF):

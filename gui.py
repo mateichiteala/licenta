@@ -1,5 +1,4 @@
 from multiprocessing import Process, Queue
-from pickle import TRUE
 import time
 # from queue import Queue
 from turtle import Screen
@@ -21,18 +20,27 @@ MAX_FPS = 15
 
 
 class Gui():
-    def __init__(self):
+    def __init__(self, playerOne, playerTwo, board_type=1):
         self.status_dict = {
             0: "CONTINUE",
             1: "CHECK",
             2: "CHECKMATE",
             3: "STALEMATE"
         }
+        self.playerOne = True if playerOne["player"] == 0 else False
+        self.playerTwo = True if playerTwo["player"] == 0 else False
+        self.board_type = board_type
+        self.playerOne_dict = playerOne
+        self.playerTwo_dict = playerTwo
         self.IMAGES = {}
+        self.loagImages()
+
+    def loagImages(self):
         pieces = ["wp", "bp", "wB", "bB", "wN",
                   "bN", "wR", "bR", "wQ", "bQ", "wK", "bK"]
         for piece in pieces:
             self.IMAGES[piece] = pygame.image.load(f"images/{piece}.png")
+    
     def drawBoard(self, screen):
         colors = [pygame.Color("white"), pygame.Color("grey")]
         for row in range(DIMENSION):
@@ -93,8 +101,6 @@ class Gui():
         checkmate = False
         stalemate = False
         # true - human, false - computer
-        playerOne = False
-        playerTwo = False
 
         opening = True
         openingMoves = []
@@ -104,7 +110,7 @@ class Gui():
             lines = [line.rstrip() for line in f]
         
         while running:
-            humanTurn = (board.playerTurn and playerOne) or (not board.playerTurn and playerTwo)
+            humanTurn = (board.playerTurn and self.playerOne) or (not board.playerTurn and self.playerTwo)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     running = False
@@ -155,14 +161,14 @@ class Gui():
                         square_selected = ()
             
             if not humanTurn:
-                opening = False
+                opening = True
                 if len(openingMoves) > 10:
                     opening = False
 
                 moveMade = False
                 if opening == True and len(openingMoves) > 0:
                     check = False
-                    for index, line in enumerate(lines):
+                    for _, line in enumerate(lines):
                         openeingMoves_str = " ".join([str(item) for item in openingMoves])
                         if line.startswith(openeingMoves_str) and len(line.split()) > len(openingMoves):
                             check = True
@@ -174,7 +180,7 @@ class Gui():
                                 opening = False
                                 break
                             
-                            moveMade, move = board.guiToBoard(pos[0], pos[1], validMoves)
+                            moveMade, move = board.guiToBoard(pos[0], pos[1])
                             
                             if moveMade is False:
                                 opening = False
@@ -183,7 +189,7 @@ class Gui():
                     if check is False:
                         opening = False
 
-                if len(openingMoves) == 0 and  False:
+                if len(openingMoves) == 0 and self.board_type == 0:
                     # avem deschidere
                     openingLine = random.choice(lines)
                     pngMove = openingLine.split()[0]
@@ -194,27 +200,35 @@ class Gui():
                     if pos is None:
                         moveMade = False
                     else:
-                        board.guiToBoard(pos[0], pos[1], validMoves)
+                        board.guiToBoard(pos[0], pos[1])
                         moveMade = True
                 
                 if moveMade is False:
-                    validMoves = board.getValidMoves()
-                    # aiMove = ai.bestMoveMinMax(board, validMoves)
-                    aiMove = monteCarlo.MonteCarloTreeSearchNode(board).best_move()
+                    ai_type = self.playerOne_dict["ai"] if board.playerTurn else self.playerTwo_dict["ai"]
+                    if "simulations" in ai_type:
+                        print("monte carlo")
+                        aiMove = monteCarlo.MonteCarloTreeSearchNode(board, _depth_rollout=ai_type["depth"], _time=ai_type["time"]* 60, _sim=ai_type["simulations"]).best_move()
+                    else:
+                        print("alpha-beta")
+                        validMoves = board.getValidMoves()
+                        aiMove = ai.bestMoveMinMax(board, validMoves, ai_type["depth"], ai_type["time"] * 60)
+                        
                     culoarea = "alb" if board.playerTurn else "negru"
                     print(f"A mutat {culoarea}")
                     
                     board.aiToBoard(aiMove)
                     time.sleep(1)
 
-            print(board.status)
             if board.status == 3:
+                board.printBoard()
                 print("STALEMATE")
-                print("aici")
-                return
+                while True:
+                    print("STALEMATE")
             if board.status == 2:
                 print("CHECKMATE")
-                return
+                board.printBoard()
+                while True:
+                    print("CHECKMATE")
             self.drawGameState(screen, board, validMoves, square_selected)  
             if checkmate:
                 self.writeOnBoard(screen, "CHECKMATE3")

@@ -1,6 +1,6 @@
 import numpy as np
 
-def doubledPawmScore(board):
+def doubledPawnScore(board):
     transpose_board = np.transpose(board)
     score = {
         True: 0,

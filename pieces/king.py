@@ -3,8 +3,9 @@ from pieces.move import Move
 from pieces.rook import Rook
 
 class King(Piece):
-    def __init__(self, team, type, row, col):
+    def __init__(self, team, row, col):
         value = 20000
+        type = 'K'
         self.castle = True  # on false if king moved
         self.inCastle = False
         self.firstMoveIndex = None

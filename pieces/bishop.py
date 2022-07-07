@@ -3,8 +3,9 @@ from pieces.move import Move
 
 
 class Bishop(Piece):
-    def __init__(self, team, type, row, col):
+    def __init__(self, team, row, col):
         value = 330
+        type = 'B'
         super().__init__(team, type, value, row, col)
         
     def getMoves(self, _board):

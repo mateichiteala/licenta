@@ -1,117 +1,52 @@
-from copy import deepcopy
+import time
 import random
+import sys
 from typing import List
+
 from board import Board
 from pieces.move import Move
-
-from pieces.piece import Piece
-from pieces.rook import Rook
-from zobrist import ZobristClass
-import scores
+from zobrist import TranspositionTable
 from scores.score import scoreMaterial
+
 CHECKMATE = 1000000
 STALEMATE = 0
+INF = sys.maxsize
 global nextMove
 global new_hashes
 global moves
 global undoes
-global index_nextMove
+global DEPTH
 
 
+zob = TranspositionTable()
 
-# knightScores = [[1, 1, 1, 1, 1, 1, 1, 1],
-#                 [1, 2, 2, 2, 2, 2, 2, 1],
-#                 [1, 2, 3, 3, 3, 3, 2, 1],
-#                 [1, 2, 3, 4, 4, 3, 2, 1],
-#                 [1, 2, 3, 4, 4, 3, 2, 1],
-#                 [1, 2, 3, 3, 3, 3, 2, 1],
-#                 [1, 2, 2, 2, 2, 2, 2, 1],
-#                 [1, 1, 1, 1, 1, 1, 1, 1]
-#             ]
-
-# piecePositonScores = {"N": knightScores}
-def findRandomMoves(validMoves):
-    return validMoves[random.randint(0, len(validMoves)-1)]
-
-def findBestMove(board: Board, validMoves: List[Move]):
-    turnMultiplier = 1 if board.playerTurn else -1
-    opponentMinMaxScore = CHECKMATE
-    bestMove = None
-
-    random.shuffle(validMoves)
-    playerMove: Move
-    for playerMove in validMoves:
-        # Make move
-        board.move(playerMove)
-
-        opponentMaxScore = -CHECKMATE
-        # Change Turn
-        playerTurn = not board.playerTurn
-        
-        # All opponet's moves
-        opponentMoves = board.allValidMoves(playerTurn)
-        opponentMove: Move
-        for opponentMove in opponentMoves:
-            # Make the opponent move
-            board.move(opponentMove)
-            validMoves, check, _ = board.isCheck(playerTurn)
-            
-            if check and len(validMoves) == 0:
-                score = -turnMultiplier * CHECKMATE
-            elif board.isStalemate(playerTurn):
-                score = STALEMATE
-            else:
-                score = -turnMultiplier * scoreMaterial(board.board)
-            # Take the opponent's best move
-            if score > opponentMaxScore:
-                opponentMaxScore = score
-            board.undoMove()
-
-        # Get the move with opponet's lowest score
-        if opponentMaxScore < opponentMinMaxScore:
-            opponentMinMaxScore = opponentMaxScore
-            bestMove = playerMove
-        board.undoMove()
-        
-
-    return bestMove
-
-# def scoreMaterial(board: Board):
-#     score = 0
-#     for row in board:
-#         square: Piece
-#         for square in row:
-#             if square != 0 and square.team:
-#                 score += square.value
-#             if square != 0 and square.team is False:
-#                 score -= square.value
-#     return score
-
-DEPTH = 6
-zob = ZobristClass()
-import time
-def minimax_timeout(board, validMoves, DEPTH, playerTurn):
-    minimax(board, validMoves, DEPTH, playerTurn, -CHECKMATE, CHECKMATE)
-
-
-def bestMoveMinMax(board: Board, validMoves: List[Move]):
+def bestMoveMinMax(board: Board, validMoves: List[Move], depth, _time):
     global nextMove
     global new_hashes
     global moves
     global undoes
-    global index_nextMove
+    global DEPTH
 
     nextMove = None
     new_hashes = {}
     moves = 0
     undoes = 0
+    DEPTH = depth
 
     random.shuffle(validMoves)
+
     start_time = time.time()
-    end_time = start_time + 60*6
-    print("alpha-beta")
-    minimax(board, validMoves, DEPTH, board.playerTurn, -CHECKMATE, CHECKMATE, end_time)
+    end_time = None
+    if _time != 0:
+        end_time = start_time + _time
+    
+    transp_time_start = time.time()
+    minimax(board, validMoves, DEPTH, board.playerTurn, -INF, INF, end_time)
+    transp_time_end = time.time()
+    print(transp_time_end - transp_time_start)
+    
     zob.updateHashTable(new_hashes)
+    
     return nextMove
 
 
@@ -122,14 +57,11 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
     global undoes
 
     score = 0
-    
     resp = board.status
     if resp == 3:
         return STALEMATE
     if resp == 2:
-        return CHECKMATE if board.playerTurn else -CHECKMATE
-    if resp == 1:
-        score += -200 if board.playerTurn else 200
+        return -CHECKMATE - depth if board.playerTurn else CHECKMATE + depth
     
     if depth == 0:
         hash = zob.computeHash(board.board)
@@ -139,28 +71,27 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
             return zob.hashTable[hash]["score"]
 
     if playerTurn:
-        maxScore = -CHECKMATE
+        maxScore = -INF
         move:Move
-        for index, move in enumerate(validMoves):
+        for move in validMoves:
             board.aiToBoard(move)
-            
             hash = zob.computeHash(board.board)
-            # if hash not in zob.hashTable or zob.hashTable[hash]["depth"] < depth-1:
             if hash in zob.hashTable and zob.hashTable[hash]["depth"] > depth:
                 score = zob.hashTable[hash]["score"]
             else:
                 nextMoves = board.getValidMoves()
                 score = minimax(board, nextMoves, depth-1, False, alpha, beta, end_time)
             
+            # better value
             if score > maxScore:
                 maxScore = score
                 if depth == DEPTH:
                     nextMove = move
                         
             board.undoMove()  
-
+            # if 
             alpha = max([alpha, score])
-            if beta <= alpha or time.time() > end_time:
+            if beta <= alpha or (end_time != None and time.time() > end_time):
                 break
             else:
                 if hash not in zob.hashTable or zob.hashTable[hash]["depth"] < depth:
@@ -174,21 +105,18 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
                     }
         return maxScore
     else:
-        minScore = CHECKMATE
+        minScore = INF
         move: Move
-        for index, move in enumerate(validMoves):
-
+        for move in validMoves:
             board.aiToBoard(move)
-
             hash = zob.computeHash(board.board)
             if hash in zob.hashTable and zob.hashTable[hash]["depth"] > depth-1:
                 score = zob.hashTable[hash]["score"]
             else:
-                
-                # nextMoves = board.allValidMoves(True, pins, attackPins)
                 nextMoves = board.getValidMoves()
                 score = minimax(board, nextMoves, depth-1, True, alpha, beta, end_time)
-                
+            
+
             if score < minScore:
                 minScore = score
                 if depth == DEPTH:
@@ -197,7 +125,7 @@ def minimax(board: Board, validMoves: List[Move], depth: int, playerTurn: bool, 
             board.undoMove()
             
             beta = min([beta, score])
-            if beta <= alpha or time.time() > end_time:
+            if beta <= alpha or (end_time != None and time.time() > end_time):
                 break
             else:
                 if hash not in zob.hashTable or zob.hashTable[hash]["depth"] < depth-1:

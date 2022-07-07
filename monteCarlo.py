@@ -1,32 +1,31 @@
 import random
-import pieces.move as mv
-from pieces.move import Move
+import time
 import numpy as np
-from board import Board
-from board import CODE_CHECKMATE, CODE_STALEMATE, CODE_NORMAL
-from board import STALEMATE, CHECKMATE
+from ai import INF
 
-from collections import defaultdict
+from pieces.move import Move
+from board import CODE_CHECK, Board
+from board import CODE_CHECKMATE, CODE_STALEMATE
+from board import STALEMATE, CHECKMATE, CHECK
 from scores.score import scoreMaterial
 
 MAX = CHECKMATE
 MIN = -CHECKMATE 
 
 class MonteCarloTreeSearchNode():
-    def __init__(self, board: Board, parent=None) -> None:
+    def __init__(self, board: Board, parent=None, _time=0, _depth_rollout=6, _sim=1000) -> None:
         self.board: Board = board
         self.parent: MonteCarloTreeSearchNode = parent
         self.children = []
         self.number_of_visits = 1
-        self.results = defaultdict(int)
-        self.results[1] = 0
-        self.results[-1] = 0
         self.playerTurn = True if self.board.playerTurn else False
         self.value = 0
-
+        self.time = _time
         self.untried_moves = list()
         self.untried_moves = self.untried_actions()
-        self.depth = 3
+        self.depth_rollout = _depth_rollout
+        self.depth_node = 0
+        self.sim = _sim
         self.moveMade = None
 
     def is_terminal_node(self):
@@ -40,7 +39,7 @@ class MonteCarloTreeSearchNode():
         if resp in [CODE_CHECKMATE, CODE_STALEMATE]:
             return True
 
-        return True if self.depth == 0 else False
+        return True if self.depth_rollout == 0 else False
 
             
     def game_result(self):
@@ -48,11 +47,10 @@ class MonteCarloTreeSearchNode():
         if resp == CODE_STALEMATE:
             return STALEMATE
         if resp == CODE_CHECKMATE:
-            return -CHECKMATE if self.board.playerTurn else CHECKMATE
-
+            return -CHECKMATE +  self.depth_node*10 if self.board.playerTurn else CHECKMATE - self.depth_node*10
+        
         return scoreMaterial(self.board)
             
-    
     def untried_actions(self):
         return self.board.getValidMoves()
 
@@ -63,7 +61,7 @@ class MonteCarloTreeSearchNode():
 
         child_node = MonteCarloTreeSearchNode(board=self.board,
                 parent=self)
-
+        child_node.depth_node = self.depth_node + 1
         child_node.moveMade = move
         child_node.playerTurn = not self.playerTurn
         
@@ -73,9 +71,8 @@ class MonteCarloTreeSearchNode():
     
 
     def bestChildWithdScore(self):
-
-        return_value = MIN if self.playerTurn else MAX
-        return_child = 0
+        return_value = -INF if self.playerTurn else INF
+        return_child = random.choice(self.children)
         child: MonteCarloTreeSearchNode
 
         for child in self.children:
@@ -85,7 +82,6 @@ class MonteCarloTreeSearchNode():
             
         return return_child
             
-
     def best_child(self, C=2):
         choices_weights = list()
         child: MonteCarloTreeSearchNode
@@ -105,7 +101,6 @@ class MonteCarloTreeSearchNode():
             else:
                 current_node: MonteCarloTreeSearchNode = current_node.best_child()
                 self.board.aiToBoard(current_node.moveMade)
-
         return current_node
 
     def simulation(self):
@@ -115,14 +110,14 @@ class MonteCarloTreeSearchNode():
             move: Move = random.choice(possible_moves)
             self.board.aiToBoard(move)
             
-            self.depth -= 1
+            self.depth_rollout -= 1
             count_moves += 1
  
         result = self.game_result() 
         while count_moves > 0:
             self.board.undoMove()
             count_moves -= 1
-            self.depth += 1
+            self.depth_rollout += 1
         
         return result
 
@@ -135,13 +130,17 @@ class MonteCarloTreeSearchNode():
 
 
     def best_move(self):
-        repeats = 10000
-        for i in range(repeats):
-            print(i)
+        start_time = time.time()
+        end_time = None
+        if self.time != 0:
+            end_time = start_time + self.time
+        
+        for _ in range(self.sim):
+            if end_time != None and time.time() > end_time:
+                break
             node = self.selection()
             result = node.simulation()
             node.backpropagation(result)
-
 
         best_child: MonteCarloTreeSearchNode = self.bestChildWithdScore()
         return best_child.moveMade
