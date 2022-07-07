@@ -1,4 +1,4 @@
-from gui import Gui
+from guiTable import Gui
 
 
 if __name__ == "__main__":

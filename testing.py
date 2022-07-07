@@ -1,4 +1,4 @@
-from ai import bestMoveMinMax
+from alphaBeta import AlphaBeta
 from board import Board, CODE_CHECK, CODE_CHECKMATE, CODE_STALEMATE
 from monteCarlo import MonteCarloTreeSearchNode
 
@@ -27,12 +27,12 @@ class Testing():
         for i in range(samples):
             movesGame = 0
             # simulations += 500
-            # depth += 1
-            time += 60
+            depth += 1
+            time = 0
             while self.board.status not in [CODE_CHECKMATE, CODE_STALEMATE]: 
                 self.board.printBoard()
-                # aiMove = bestMoveMinMax(self.board, self.board.getValidMoves(), depth, _time=0)
-                aiMove = MonteCarloTreeSearchNode(board=self.board, _depth_rollout=depth, _time=time, _sim=simulations).best_move()
+                aiMove = AlphaBeta(self.board, depth, time=0).getBestMoveAI()
+                # aiMove = MonteCarloTreeSearchNode(board=self.board, _time=time, _sim=simulations).getBestMoveAI()
 
                 self.board.aiToBoard(aiMove)
                 movesGame += 1
@@ -50,8 +50,8 @@ class Testing():
                     self.movesPerGame.append(movesGame)
                     self.board = Board()
                     break
-                aiMove = bestMoveMinMax(self.board, self.board.getValidMoves(), depth, _time=120)
-                # aiMove = MonteCarloTreeSearchNode(board=self.board, _depth_rollout=4, _time=0, _sim=simulations).best_move()
+                # aiMove = AlphaBeta(self.board, depth, time=120).getBestMoveAI()
+                aiMove = MonteCarloTreeSearchNode(board=self.board, _time=time, _sim=simulations).getBestMoveAI()
                 self.board.aiToBoard(aiMove)
                 self.board.printBoard()
                 self.printStatus()
@@ -69,7 +69,7 @@ class Testing():
 
 def main():
     test = Testing()
-    test.testing(3, 4, 3000, 60)
+    test.testing(4, 3, 1000, 0)
     test.printStatistics()
 
 def plot():
@@ -105,8 +105,8 @@ def plot():
 #     plt.show()
 # frequencies
 # setting the x - coordinates
-    x = range(3000, 6000, 500)
-    y = [6, 7, 4, 4, 4, 3]
+    x = range(1, 3.5, 0.5)
+    y = [-1, -1, 0, 1, 1]
     # setting the corresponding y - coordinates
     plt.xlabel('Numar de simulări')
     plt.ylabel('Mutări necesare pentru şah mat')
@@ -115,8 +115,18 @@ def plot():
     
     # function to show the plot
     plt.show()
+
+
+    # left_coordinates=[1, 2]
+    # heights=[5, 25]
+    # bar_labels=['Tabela de transpoziţie','Fară Tabela de transpoziţie']
+    # plt.bar(left_coordinates,heights,tick_label=bar_labels,width=0.6,color=['red','black'])
+    # plt.xlabel('X-axis')
+    # plt.ylabel('Y-axis')
+    # plt.title("A simple bar graph")
+    # plt.show()
 if __name__ == "__main__":
-    main()
-    # plot()
+    # main()
+    plot()
         
         

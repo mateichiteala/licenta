@@ -42,7 +42,8 @@ class Move():
         return Move(initialPos=self.getInitialPos(), finalPos=self.getFinalPos(), pieceMoved=None, pieceCaputured=None)
 
     def __eq__(self, obj) -> bool:
-        if self.getInitialPos() == obj.getInitialPos() and self.getFinalPos() == obj.getFinalPos():
+        if self.getInitialPos() == obj.getInitialPos() and self.getFinalPos() == obj.getFinalPos()\
+            and self.pieceMoved == obj.pieceMoved and self.pieceCaptured == obj.pieceCaptured:
             return True
         else:
             return False

@@ -22,30 +22,21 @@ CHECKMATE = 50000
 CHECK = 900
 
 class Board:
-    def __init__(self):
+    def __init__(self, board_type="standard"):
         self.board = 0
         self.logMoves = list()
         self.states = list()
-
         self.playerTurn = True
-        
-
-        # self.piecesThatChecks = list()
         self.pins = list()
         self.attackPins = list()
-
         self.whiteKing: King = 0
         self.blackKing: King = 0
-
         self.enPassantPiece = 0
         self.valid_moves = list()
         self.status = 0
-
         self.newBoard("endgame3")
         self.setValidMoves()
         self.setStatus()
-
-
 
     def newBoard(self, type: int):
         self.board = np.zeros((8, 8), dtype=object)  # matrix of zeros
@@ -58,7 +49,6 @@ class Board:
         }
         board_dict[type]()
     
-
     def endgame3(self):
         """GM Judit Polgar (2686) - GM Veselin Topalov (2786)
         Ajedrez UNAM KO Mexico City MEX, 2010.11.21
@@ -272,16 +262,11 @@ class Board:
             "pins": self.pins,
             "attackPins": self.attackPins
         }
-        if self.blackKing.castle is True:
-            print("Yo")
         pointA = move.getInitialPos()
         pointB = move.getFinalPos()
         pieceMoved: Piece = move.getPieceMoved()
         pieceCaptured: Piece = move.getPieceCaptured()        
 
-        if pieceMoved == 0:
-            print("aici")
-            self.printBoard()
         # Check pawn promotion, enpassant made and if the pawn is set to enpassant
         if type(pieceMoved) == Pawn:
             # Check pawn promotion,
@@ -325,9 +310,7 @@ class Board:
             self.board[pointA[0]][pointA[1]] = 0
         
         self.states.append(state_dict)
-        
-        if self.blackKing.castle is True:
-            print("Yo")
+    
         # update log
         self.logMoves.append(move)
         # update board

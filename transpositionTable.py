@@ -22,7 +22,7 @@ class TranspositionTable():
     def __init__(self) -> None:
         self.zobristTable = self.getZobristTableToJson()
         self.hashTable = self.getHashTableToJson()
-        pass
+
     def indexing(self, piece: Piece):
         ''' mapping each piece to a particular number'''
         if piece.type == 'P' and piece.team == True:
