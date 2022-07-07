@@ -33,7 +33,7 @@ class AlphaBeta(AI):
             end_time = start_time + self.time 
         
         self.alphabeta(self.validMoves, self.depth, self.board.playerTurn, -INF, INF, end_time)
-        self.updateHashTableDB()
+        # self.updateHashTableDB()
         return self.nextMove
 
     def getBestMoveAI(self):

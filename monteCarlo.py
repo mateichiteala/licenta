@@ -151,7 +151,7 @@ class MonteCarloTreeSearchNode(AI):
             end_time = start_time + self.time
         
         for i in range(self.sim):
-            print(i)
+            # print(i)
             if end_time != None and time.time() > end_time:
                 break
             node = self.selection()

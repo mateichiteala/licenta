@@ -28,21 +28,19 @@ class Testing():
             movesGame = 0
             # simulations += 500
             depth += 1
-            time = 0
+            time += 30
             while self.board.status not in [CODE_CHECKMATE, CODE_STALEMATE]: 
                 self.board.printBoard()
-                aiMove = AlphaBeta(self.board, depth, time=0).getBestMoveAI()
-                # aiMove = MonteCarloTreeSearchNode(board=self.board, _time=time, _sim=simulations).getBestMoveAI()
-
+                # aiMove = AlphaBeta(self.board, depth, time=0).getBestMoveAI()
+                aiMove = MonteCarloTreeSearchNode(board=self.board, _time=time, _sim=simulations).getBestMoveAI()
                 self.board.aiToBoard(aiMove)
                 movesGame += 1
-                self.board.printBoard()
-                self.printStatus()
-                print(movesGame)
+                # self.board.printBoard()
+                # self.printStatus()
+                # print(movesGame)
                 if self.board.status == CODE_CHECKMATE:
                     self.whiteWins += 1
                     self.movesPerGame.append(movesGame)
-
                     self.board = Board()
                     break
                 if self.board.status == CODE_STALEMATE:
@@ -50,11 +48,11 @@ class Testing():
                     self.movesPerGame.append(movesGame)
                     self.board = Board()
                     break
-                # aiMove = AlphaBeta(self.board, depth, time=120).getBestMoveAI()
-                aiMove = MonteCarloTreeSearchNode(board=self.board, _time=time, _sim=simulations).getBestMoveAI()
+                aiMove = AlphaBeta(self.board, depth, time=0).getBestMoveAI()
+                # aiMove = MonteCarloTreeSearchNode(board=self.board, _time=time, _sim=simulations).getBestMoveAI()
                 self.board.aiToBoard(aiMove)
-                self.board.printBoard()
-                self.printStatus()
+                # self.board.printBoard()
+                # self.printStatus()
                 if self.board.status == CODE_CHECKMATE:
                     self.blackWins += 1
                     self.movesPerGame.append(movesGame)
@@ -69,7 +67,7 @@ class Testing():
 
 def main():
     test = Testing()
-    test.testing(4, 3, 1000, 0)
+    test.testing(10, 2, 3000, 30)
     test.printStatistics()
 
 def plot():
@@ -126,7 +124,7 @@ def plot():
     # plt.title("A simple bar graph")
     # plt.show()
 if __name__ == "__main__":
-    # main()
-    plot()
+    main()
+    # plot()
         
         
