@@ -1,10 +1,10 @@
-from mongoengine import Document, IntField, FloatField, ListField, LongField
-from mongoengine import connect, disconnect
 import json
 import random
 
-from numpy import unsignedinteger
+from mongoengine import Document, IntField, FloatField, ListField, LongField
+from mongoengine import connect, disconnect
 
+from conn import database_info
 from pieces.piece import Piece
 
 class ZobristTable(Document):
@@ -53,7 +53,8 @@ class TranspositionTable():
             return -1
     
     def updateHashTable(self, new_hashes: dict):
-        connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
+        connect(db=database_info["db"], host=database_info["host"], port=database_info["port"],
+        username=database_info["username"], password=database_info["password"])
         for key in new_hashes:
             try:
                 HashTable(
@@ -67,11 +68,11 @@ class TranspositionTable():
         
     def getHashTableToJson(self):
         zob_dict = {}
-        connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
+        connect(db=database_info["db"], host=database_info["host"], port=database_info["port"],
+        username=database_info["username"], password=database_info["password"])
         docs = list(HashTable.objects())
         for obj in docs:
             obj_json = json.loads(obj.to_json())
-            print(obj_json)
             zob_dict[obj_json["_id"]] = {
                 "score": obj_json["score"],
                 "depth": obj_json["depth"]
@@ -80,7 +81,8 @@ class TranspositionTable():
         return zob_dict
 
     def getZobristTableToJson(self):
-        connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
+        connect(db=database_info["db"], host=database_info["host"], port=database_info["port"],
+        username=database_info["username"], password=database_info["password"])
         zob_dict = {}
         docs = list(ZobristTable.objects().fields(id=0))
         for obj in docs:
@@ -99,7 +101,8 @@ class TranspositionTable():
         return h
 
     def generateZobristTable(self):
-        connect(db="licenta", host="localhost", port=27017, username="AdminMatei", password="pass")
+        connect(db=database_info["db"], host=database_info["host"], port=database_info["port"],
+        username=database_info["username"], password=database_info["password"])
         zobTable = [[[random.getrandbits(63) for i in range(12)]for j in range(8)]for k in range(8)]
         for index, row in enumerate(zobTable):
             cols = list()

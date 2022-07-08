@@ -1,9 +1,9 @@
+import sys
 import time
 import random
-import sys
 from typing import List
-from ai import AI
 
+from ai import AI
 from board import Board
 from pieces.move import Move
 from transpositionTable import TranspositionTable
@@ -33,7 +33,6 @@ class AlphaBeta(AI):
             end_time = start_time + self.time 
         
         self.alphabeta(self.validMoves, self.depth, self.board.playerTurn, -INF, INF, end_time)
-        # self.updateHashTableDB()
         return self.nextMove
 
     def getBestMoveAI(self):
@@ -55,7 +54,8 @@ class AlphaBeta(AI):
                 "score": score,
                 "depth": _depth
             }
-    def updateHashTableDB(self):
+
+    def updateDatabase(self):
         self.transpTable.updateHashTable(self.new_hashes)
 
     def alphabeta(self, validMoves: List[Move], depth: int, playerTurn: bool, alpha, beta, end_time):
@@ -64,14 +64,13 @@ class AlphaBeta(AI):
         if resp == 3:
             return STALEMATE
         if resp == 2:
-            return -CHECKMATE - self.depth if self.board.playerTurn else CHECKMATE + self.depth
+            return -CHECKMATE - depth if self.board.playerTurn else CHECKMATE + depth
         
         if depth == 0:
             hash = self.transpTable.computeHash(self.board.board)
             result = self.returnScoreFromHash(depth, hash)
             return result if result != False else scoreMaterial(self.board)
                 
-
         if playerTurn:
             maxScore = -INF
             move:Move

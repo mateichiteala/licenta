@@ -1,8 +1,9 @@
-import scores
 import scores.matrix as matrix
+from board import CODE_CHECK
 from scores.pawnScore import doubledPawnScore, getCountPawns, isolatedPawn
 from scores.bishopScore import bishopPair
 from scores.rookScore import rookOpenFile
+
 tables={
     "pw": matrix.PawnTableW,
     "Nw": matrix.KnightTableW,
@@ -18,11 +19,7 @@ tables={
     "Kbm": matrix.KingMB,
     "Kb": matrix.KingEB,
     "Kw": matrix.KingEW
-
 }
-
-# def forceEnemyKing(whiteKing, blackKing):
-#     pass
 
 def scoreMaterial(_board):
     board = _board.board
@@ -45,21 +42,12 @@ def scoreMaterial(_board):
                 if square.team is False:
                     score -= (square.value + positionalScore + _knightInfluencedByPawnsScore + _rookInfluencedByPawnsScore)
 
-    # score += bishopPair(board)
-    # score += rookOpenFile(board)
-    # score += doubledPawmScore(board)
-    # score += isolatedPawn(board)
+    score += bishopPair(board)
+    score += rookOpenFile(board)
+    score += doubledPawnScore(board)
+    score += isolatedPawn(board)
 
-    # if _board.status == 1:
-    #     score += -50 if _board.playerTurn else 50
-
-    # if _board.status == 2:
-    #     score += -5000 if _board.playerTurn else 5000
-
-    # if _board.status == 3:
-    #     score = 0
-    
-    
-
+    if _board.status == CODE_CHECK:
+        score += -100 if _board.playerTurn else 100
     
     return score

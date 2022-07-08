@@ -1,26 +1,34 @@
-from multiprocessing import Process, Queue
-from shutil import move
 import time
-# from queue import Queue
+import random
+
 import pygame
+
+import pieces.move as mv
 from board import CODE_CHECKMATE, CODE_STALEMATE, Board
 from pieces.piece import Piece
 from pieces.move import Move
 from alphaBeta import AlphaBeta
-from monteCarlo import MonteCarloTreeSearchNode
-import pieces.move as mv
-import random
+from monteCarlo import MonteCarloTree
 
 WIDTH = 512
 HEIGHT = 512
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
-
 MAX_FPS = 15
 
 
 class Gui():
     def __init__(self, playerOne, playerTwo, board_type="standard"):
+        self.square_selected = ()
+        self.validMoves = list()
+        self.player_move = list()
+        self.screen = None
+        self.clock = None
+        self.board = Board(board_type)
+        self.openingMoves = list()
+        self.openingCheck = True
+        self.IMAGES = {}
+        self.openingTable = list()
         self.status_dict = {
             0: "CONTINUE",
             1: "CHECK",
@@ -32,23 +40,11 @@ class Gui():
         self.board_type = board_type
         self.playerOne = playerOne
         self.playerTwo = playerTwo
-        self.IMAGES = {}
+        
         self.loagImages()
-        self.screen = None
-        self.clock = None
-        self.board = Board(board_type)
         self.init()
-        self.openingMoves = list()
-        self.openingCheck = True
-        self.openingTable = list()
         self.loadOpenings()
-        self.square_selected = ()
-        self.validMoves = list()
-        self.player_move = list()
 
-
-       
-    
     def loadOpenings(self):
         with open('openings.txt') as f:
             self.openingTable = [line.rstrip() for line in f]
@@ -101,11 +97,12 @@ class Gui():
 
     def setAI(self):
         # ai
+        print("loading...")
         if "ai" in self.playerOne:
             _time = self.playerOne["ai"]["time"] * 60
             if "simulations" in self.playerOne["ai"]:
                 _sim = self.playerOne["ai"]["simulations"]
-                self.playerOne = MonteCarloTreeSearchNode(board=self.board, _time=_time, _sim=_sim)
+                self.playerOne = MonteCarloTree(board=self.board, _time=_time, _sim=_sim)
             else:
                 _depth = self.playerOne["ai"]["depth"]
                 self.playerOne = AlphaBeta(self.board, depth=_depth, time=_time)
@@ -114,7 +111,7 @@ class Gui():
             _time = self.playerTwo["ai"]["time"] * 60
             if "simulations" in self.playerTwo["ai"]:
                 _sim = self.playerTwo["ai"]["simulations"]
-                self.playerTwo = MonteCarloTreeSearchNode(board=self.board, _time=_time, _sim=_sim)
+                self.playerTwo = MonteCarloTree(board=self.board, _time=_time, _sim=_sim)
             else:
                 _depth = self.playerTwo["ai"]["depth"]
                 self.playerTwo = AlphaBeta(self.board, depth=_depth, time=_time)
@@ -125,6 +122,10 @@ class Gui():
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.screen.fill(pygame.Color("white"))
         self.clock = pygame.time.Clock()
+        self.drawGameState()
+        self.drawGameState()  
+        self.clock.tick(MAX_FPS)
+        pygame.display.flip()
         self.setAI()
 
     def doOpening(self):
@@ -214,33 +215,36 @@ class Gui():
                     self.player_move.clear()
 
     def doAImove(self):
+        print("AI thinking...")
         moveAI = self.playerOne.getBestMoveAI() if self.board.playerTurn else self.playerTwo.getBestMoveAI()
         culoarea = "alb" if self.board.playerTurn else "negru"
         print(f"A mutat {culoarea}")
-        self.board.printBoard()
         self.board.aiToBoard(moveAI)
-        self.board.printBoard()
-
-
-            
+   
     def start(self):
         running = True
         while running:
             humanTurn = (self.board.playerTurn and self.playerOneHuman) or (not self.board.playerTurn and self.playerTwoHuman)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
+                    print("update database...")
+                    if type(self.playerOne) == AlphaBeta:
+                        self.playerOne.updateDatabase()
+                    if type(self.playerTwo) == AlphaBeta:
+                        self.playerTwo.updateDatabase()
+                    print("exit")
                     running = False
                 elif e.type == pygame.MOUSEBUTTONDOWN:
                     if humanTurn and self.board.status not in [CODE_CHECKMATE, CODE_STALEMATE]:   
                        self.humanTurnMove()
                 elif e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_z:
+                    if e.key == pygame.K_z and (type(self.playerOne) not in [AlphaBeta, MonteCarloTree]
+                    and type(self.playerTwo) not in [AlphaBeta, MonteCarloTree]):
                         self.board.undoMove()
                         self.square_selected = ()
             
             if not humanTurn and self.board.status not in [CODE_CHECKMATE, CODE_STALEMATE]:
                 moveMade = self.doOpening()
-
                 if moveMade is False:
                     self.doAImove()
                     time.sleep(1)
@@ -248,6 +252,12 @@ class Gui():
             if self.board.status == CODE_CHECKMATE:
                 self.writeOnBoard("CHECKMATE")
                 print("CHECKMATE")
+                if type(self.playerOne) == AlphaBeta:
+                    self.playerOne.updateDatabase()
+                if type(self.playerTwo) == AlphaBeta:
+                    self.playerTwo.updateDatabase()
+                
+                
             if self.board.status == CODE_STALEMATE:
                 self.writeOnBoard("STALEMATE")
                 print("STALEMATE")
@@ -255,4 +265,9 @@ class Gui():
             self.drawGameState()  
             self.clock.tick(MAX_FPS)
             pygame.display.flip()
+
+        self.drawGameState()  
+        self.clock.tick(MAX_FPS)
+        pygame.display.flip()
+
 

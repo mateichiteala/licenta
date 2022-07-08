@@ -17,7 +17,8 @@ class Knight(Piece):
         for direction in directions:
             rowF = rowI + direction[0]
             colF = colI + direction[1]
-            if (0 <= rowF < 8 and 0 <= colF < 8) and (board[rowF][colF] == 0 or board[rowF][colF].team != self.team):  # inside the board, empty square or enemy piece 
+            # inside the board, empty square or enemy piece
+            if (0 <= rowF < 8 and 0 <= colF < 8) and (board[rowF][colF] == 0 or board[rowF][colF].team != self.team):  
                 pieceCaptured = board[rowF][colF]
                 moves.append(Move((rowI, colI), (rowF, colF), pieceMoved, pieceCaptured))
         return moves

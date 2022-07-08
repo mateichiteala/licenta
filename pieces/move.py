@@ -1,7 +1,3 @@
-
-# from board import Board
-
-
 class Move():
     def __init__(self, initialPos, finalPos, pieceMoved=0, pieceCaputured=0):
         self.rowI = initialPos[0]
@@ -78,7 +74,6 @@ class Move():
             result += self.pieceMoved.type
         
         if self.pieceCaptured != 0:
-            # print(self.pieceCaptured)
             result += "x"
         
         result += finalPos
@@ -107,7 +102,6 @@ def fromPNGtoMove(chessNotationMove: str, board):
 
     pieceType = chessNotationMove[0] 
     finalPosChessNotation = chessNotationMove[-2:]
-    # print(finalPosChessNotation)
     rowF = 8 - int(finalPosChessNotation[1])
     colF = ord(finalPosChessNotation[0]) - 97
     initialPos = ()

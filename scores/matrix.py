@@ -46,7 +46,6 @@ RookTableW = [
     [-5,  0,  0,  0,  0,  0,  0, -5],
     [0,  -10,  0,  5,  5,  0,  -10,  0]		
 ]
-# print(np.transpose(RookTableB))
 RookTableB = np.rot90(np.rot90(RookTableW))
 
 QueenTableW = [

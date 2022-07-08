@@ -1,6 +1,4 @@
-from guiTable import Gui
-
+from guiMenu import start_the_game
 
 if __name__ == "__main__":
-    gui = Gui()
-    gui.start()
+    start_the_game()

@@ -1,6 +1,6 @@
+import numpy as np
+from typing import Union
 
-from typing import List, Union, final
-from xmlrpc.client import Boolean
 from pieces.bishop import Bishop
 from pieces.king import King
 from pieces.knight import Knight
@@ -10,7 +10,6 @@ from pieces.queen import Queen
 from pieces.rook import Rook
 from builtins import range
 from pieces.move import Move
-import numpy as np
 
 CODE_STALEMATE = 3
 CODE_CHECKMATE = 2
@@ -34,7 +33,7 @@ class Board:
         self.enPassantPiece = 0
         self.valid_moves = list()
         self.status = 0
-        self.newBoard("endgame3")
+        self.newBoard(board_type)
         self.setValidMoves()
         self.setStatus()
 
@@ -44,8 +43,9 @@ class Board:
             "standard": self.setBoardPieces,
             "endGame1": self.endgame1,
             "endGame2": self.endgame2,
+            "endGame4": self.endgame4,
             "twoRookMate": self.twoRookMate,
-            "endgame3": self.endgame3
+            "endGame3": self.endgame3
         }
         board_dict[type]()
     
@@ -96,7 +96,6 @@ class Board:
     def twoRookMate(self):
         self.board[1][4] = King(False, 1, 4)
         self.blackKing = self.board[1][4]
-
         self.board[7][7] = Rook(True, 7, 7)
         self.board[2][0] = Rook(True, 2, 0)
         self.board[7][3] = King(True, 7, 3)
@@ -104,54 +103,89 @@ class Board:
         self.whiteKing.castle = False
 
     def endgame1(self):
-        # self.board[2][0] = Pawn(False, 'p',2, 0)
         self.board[3][1] = Pawn(False, 3, 1)
         self.board[6][7] = Pawn(False, 6, 7)
-
         self.board[2][6] = Rook(False, 2, 6)
-
         self.board[7][7] = King(False, 7, 7)
         self.blackKing = self.board[7][7]
-
-
-
         self.board[4][1] = Pawn(True, 4, 1)
-
         self.board[4][3] = Rook(True, 4, 3)
-
         self.board[6][5] = King(True, 6, 5)
         self.whiteKing = self.board[6][5]
 
     def endgame2(self):
         self.board[2][1] = Pawn(False, 2, 1)
-
         self.board[1][0] = King(False, 1, 0)
         self.blackKing = self.board[1][0]
-
-
         self.board[7][5] = Rook(True, 7, 5)
-
         self.board[2][2] = King(True, 2, 2)
         self.whiteKing = self.board[2][2]
 
     def endgame1(self):
-            # self.board[2][0] = Pawn(False, 'p',2, 0)
-            self.board[3][1] = Pawn(False, 3, 1)
-            self.board[6][7] = Pawn(False, 6, 7)
+        self.board[3][1] = Pawn(False, 3, 1)
+        self.board[6][7] = Pawn(False, 6, 7)
+        self.board[2][6] = Rook(False, 2, 6)
+        self.board[7][7] = King(False, 7, 7)
+        self.blackKing = self.board[7][7]
+        self.board[4][1] = Pawn(True, 4, 1)
+        self.board[4][3] = Rook(True, 4, 3)
+        self.board[6][5] = King(True, 6, 5)
+        self.whiteKing = self.board[6][5]
 
-            self.board[2][6] = Rook(False, 2, 6)
 
-            self.board[7][7] = King(False, 7, 7)
-            self.blackKing = self.board[7][7]
+    def endgame4(self):
+        # for i in range(8):
+        #     self.board[6][i] = Pawn(True,  6, i)
+        #     self.board[1][i] = Pawn(False,  1, i)
+        self.playerTurn = False
+
+        self.board[3][5] = Pawn(False, 3, 5, initilialPosSet=False)
+        self.board[1][3] = Pawn(False, 1, 3)
+        self.board[1][4] = Pawn(False, 1, 4)
+
+        # set bishops
+        # white
+        self.board[2][7] = Bishop(True, 2, 7)
+        # self.board[7][5] = Bishop(True, 7, 5)
+        # black
+        # self.board[0][2] = Bishop(False, 0, 2)
+        # self.board[0][5] = Bishop(False, 0, 5)
+
+        # set knights
+        # white
+        self.board[7][1] = Knight(True, 7, 1)
+        self.board[7][6] = Knight(True, 7, 6)
+        # black
+        self.board[0][1] = Knight(False, 0, 1)
+        self.board[1][4] = Knight(False, 1, 4)
+
+        # set rooks
+        # white
+        self.board[6][5] = Rook(True, 6, 5)
+        self.board[7][5] = Rook(True, 7, 5)
+        # black
+        self.board[0][0] = Rook(False, 0, 0)
+        self.board[0][7] = Rook(False, 0, 7)
+
+        # set queens
+        # white
+        self.board[4][4] = Queen(True, 4, 4)
+        # black
+        # self.board[0][3] = Queen(False, 0, 3)
+
+        # set kings
+        # white
+        self.board[7][4] = King(True, 7, 4)
+        self.whiteKing = self.board[7][4]
+        self.whiteKing.castle = False
+        self.whiteKing.firstMoveIndex = -1
 
 
-
-            self.board[4][1] = Pawn(True, 4, 1)
-
-            self.board[4][3] = Rook(True, 4, 3)
-
-            self.board[6][5] = King(True, 6, 5)
-            self.whiteKing = self.board[6][5]
+        # black
+        self.board[0][4] = King(False, 0, 4)
+        self.blackKing = self.board[0][4]
+        self.blackKing.castle = False
+        self.blackKing.firstMoveIndex = -1
 
 
 
@@ -222,14 +256,12 @@ class Board:
             self.board[pointB[0]][pointB[1]] = piece
         return piece
 
-
     def enPassantMade(self, move: Move):
         # en passant was made
         direction = 1 if self.playerTurn else -1
         if 0 <= move.rowF + direction <= 7:
             # check if pieceCaptured == 0 + check the piece behind the pieceCaptured is a pawn + the piece has enPassnt activated
             opponentPawn = self.board[move.rowF+direction][move.colF]
-
             if move.getPieceCaptured() == opponentPawn and type(opponentPawn) == Pawn\
                     and opponentPawn.team != self.playerTurn and opponentPawn == self.enPassantPiece:
                 # set the position on the table
@@ -294,13 +326,11 @@ class Board:
             self.board[pointA[0]][pointA[1]] = 0
 
             state_dict["castleMade"]  = True
-
         else:
-            
             # If the rook was moved and has castle=True -> can not castle no more
             if type(pieceMoved) in [Rook, King]:
                 pieceMoved.castle = False
-                if pieceMoved.firstMoveIndex not in [None, -1]:
+                if pieceMoved.firstMoveIndex == None:
                     pieceMoved.firstMoveIndex = len(self.logMoves)
 
             # new position for the piece
@@ -315,10 +345,8 @@ class Board:
         self.logMoves.append(move)
         # update board
         self.playerTurn = not self.playerTurn
-        
         return True
         
-
     def undoMove(self):
         # There are moves to undo
         if len(self.logMoves) != 0:
@@ -344,9 +372,7 @@ class Board:
             
             if state_dict["castleMade"] is True:
                 # we have to undo castle
-
                 # update board
-
                 # position of the pieces before we undo
                 pieceMovedPosition = pieceMoved.getPosition()
                 pieceCapturedPosition = pieceCaptured.getPosition()
@@ -365,36 +391,12 @@ class Board:
                 pieceCaptured.setCastle(True)
                 self.board[finalPosition[0]][finalPosition[1]] = pieceCaptured
 
-
                 # zero the position where the King and Rook were
                 self.board[pieceMovedPosition[0]][pieceMovedPosition[1]] = 0
                 self.board[pieceCapturedPosition[0]][pieceCapturedPosition[1]] = 0
-                
                 return
-            
-
-            # if state_dict["enPassantActive"] is True:
-            #     self.enPassantPiece = state_dict[]
-                # # we have to set the new pawn that is enPassant active
-                # # and undo move
-
-                # positionEnpassantPawn = state_dict["enPassantActive"]
-                # # update pieces
-                # pieceMoved.setPosition(initialPosition[0], initialPosition[1])
-                # # if pieceCaptured != 0:
-                # #     pieceCaptured.setPosition(finalPosition[0], finalPosition[1])
-                # # update board
-                # self.board[initialPosition[0]][initialPosition[1]] = pieceMoved
-                # self.board[finalPosition[0]][finalPosition[1]] = pieceCaptured
-
-                # # update the new enPassant piece
-                # self.enPassantPiece = self.board[positionEnpassantPawn[0]][positionEnpassantPawn[1]]
-                # if pieceMoved == 0:
-                #     print("sal4")
-                # return
 
             if state_dict["enPassantMade"] is True:
-            
                 self.board[pieceMoved.row][pieceMoved.col] = 0
                 
                 pieceMoved.setPosition(initialPosition[0], initialPosition[1])
@@ -408,7 +410,6 @@ class Board:
                 return
 
             self.enPassantPiece = state_dict["enPassantActive"]
-            
             pieceMoved.setPosition(initialPosition[0], initialPosition[1])
 
             if type(pieceMoved) in [King, Rook] and pieceMoved.firstMoveIndex == len(self.logMoves):
@@ -506,7 +507,7 @@ class Board:
 
         return checks, pins, attackPins
 
-    def getPiecesByColor(self, player: Boolean):
+    def getPiecesByColor(self, player: bool):
         pieces = list()
         for i in range(8):
             for j in range(8):
@@ -651,14 +652,12 @@ class Board:
             if type(opponentPawn) == Pawn and opponentPawn == self.enPassantPiece:
                 move.setPieceCaptured(opponentPawn)
 
-
         response = False
         if move in self.valid_moves:
             self.move(move)
             self.updateBoard()
             response = True
         return response, move
-
   
     def aiToBoard(self, move):
         self.move(move)
@@ -682,5 +681,4 @@ class Board:
               
 
 if __name__ == '__main__':
-    ana = 'ana'
-    print(ana[0])
+    pass

@@ -1,7 +1,5 @@
 from pieces.piece import Piece
-from pieces.rook import Rook
 from pieces.move import Move
-import copy
 
 
 class Pawn(Piece):
